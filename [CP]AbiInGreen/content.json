@@ -1,0 +1,22 @@
+{
+    "Format": "2.9.0",
+    "Changes": [
+        {
+            "Action": "Load",
+            "Target": "Characters/Abigail",
+            "FromFile": "assets/Abigail.png"
+        },
+        {
+            "Action": "Load",
+            "Target": "Portraits/Abigail",
+            "FromFile": "assets/AbigailPortrait.png"
+        },
+        {
+            "Action": "EditData",
+            "Target": "Characters/Dialogue/Abigail",
+            "Entries": {
+                "Mon": "{{i18n: Mon}}"
+            }
+        }
+    ]
+}

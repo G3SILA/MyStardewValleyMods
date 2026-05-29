@@ -1,0 +1,11 @@
+{
+    "Name": "AbiInGreen",
+    "Author": "Gesila",
+    "Version": "1.0.0",
+    "Description": "Dress Abigail in green when she walks around",
+    "UniqueID": "Gesila.AbiInGreen",
+    "UpdateKeys": [], 
+    "ContentPackFor": {
+        "UniqueID": "Pathoschild.ContentPatcher"
+    }
+}
