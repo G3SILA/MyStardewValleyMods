@@ -1,0 +1,11 @@
+{
+    "Name": "[CP]MorePets",
+    "Author": "Gesila",
+    "Version": "1.0.0",
+    "Description": "A few more options for pets",
+    "UniqueID": "Gesila.MorePets",
+    "UpdateKeys": [], 
+    "ContentPackFor": {
+        "UniqueID": "Pathoschild.ContentPatcher"
+    }
+}

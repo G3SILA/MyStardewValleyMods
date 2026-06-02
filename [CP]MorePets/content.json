@@ -1,0 +1,28 @@
+{
+    "Format": "2.9.0",
+    "Changes": [
+        {
+            "Action": "EditData",
+            "Target": "Data/Pets",
+            "TargetField": [ "Cat", "Breeds" ],
+            "Entries": {
+                "cat5": {
+                    "Id": "5",
+                    "Texture": "Mods/{{ModId}}/assets/cat5",
+                    "IconTexture": "Mods/{{ModId}}/assets/icons",
+                    "IconSourceRect": {
+                        "X": 0,
+                        "Y": 0,
+                        "Width": 16,
+                        "Height": 16
+                    },
+                    "CanBeChosenAtStart": true,
+                    "CanBeAdoptedFromMarnie": true,
+                    "AdoptionPrice": 40000,
+                    "BarkOverride": null,
+                    "VoicePitch": 1.0
+                }
+            }
+        }
+    ]
+}
