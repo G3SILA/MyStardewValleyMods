@@ -2,6 +2,16 @@
     "Format": "2.9.0",
     "Changes": [
         {
+            "Action": "Load",
+            "Target": "Mods/{{ModId}}/assets/cat5",
+            "FromFile": "assets/cat5.png"
+        },
+        {
+            "Action": "Load",
+            "Target": "Mods/{{ModId}}/assets/icons",
+            "FromFile": "assets/icons.png"
+        },
+        {
             "Action": "EditData",
             "Target": "Data/Pets",
             "TargetField": [ "Cat", "Breeds" ],
