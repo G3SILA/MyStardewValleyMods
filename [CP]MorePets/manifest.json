@@ -4,7 +4,7 @@
     "Version": "1.0.1",
     "Description": "A few more options for pets",
     "UniqueID": "Gesila.MorePets",
-    "UpdateKeys": [], 
+    "UpdateKeys": ["Nexus:47096"], 
     "ContentPackFor": {
         "UniqueID": "Pathoschild.ContentPatcher"
     }
