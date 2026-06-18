@@ -1,0 +1,9 @@
+{
+  "Name": "CombatPets",
+  "Author": "Gesila",
+  "Version": "%ProjectVersion%",
+  "Description": "Let your pet accompany you down into the mine and fight for you!",
+  "UniqueID": "Gesila.CombatPets",
+  "EntryDll": "CombatPets.dll",
+  "UpdateKeys": []
+}
