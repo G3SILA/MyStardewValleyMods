@@ -1,9 +1,10 @@
-﻿using StardewModdingAPI;
+﻿using Microsoft.Xna.Framework;
+using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Characters;
 using StardewValley.Pathfinding;
-using Microsoft.Xna.Framework;
+
 
 namespace CombatPets
 {
@@ -14,7 +15,11 @@ namespace CombatPets
         private ModConfig Config;
 
         private Point? _lastDestination; 
-        private int _repathCooldown = 0; 
+        private int _repathCooldown = 0;
+
+        private Point _lastTile;
+        private Vector2 _playerLastPosition;
+        private int stuckCounter = 0;
 
         public PetMove(IMonitor monitor, ModConfig config) 
         { 
@@ -26,21 +31,80 @@ namespace CombatPets
         {
             if (pet == null) return;
 
+            // repath per 15 ticks
             if (_repathCooldown > 0)
             {
                 _repathCooldown--;
                 return;
             }
 
+            // warp if different location
+            Farmer player = Game1.player;
+            if (player.currentLocation != pet.currentLocation)
+            {
+                this.WarpPet(pet, player.currentLocation);
+                return;
+            }
 
+            // if stucked for 1 second and player is moving
+            if (pet.TilePoint == _lastTile && 
+                _playerLastPosition != player.Position && pet.controller != null)
+            {
+                stuckCounter += 2; // player move slow, count faster
+
+                Monitor.Log($"{stuckCounter}, player: {player.Position}", LogLevel.Debug);
+            
+                if (stuckCounter > 60) 
+                {
+                    Monitor.Log($"Pet {pet.Name} seems stuck, warping to player.", LogLevel.Warn);
+                    this.WarpPet(pet, player.currentLocation);
+                    stuckCounter = 0;
+                    return;
+                }
+
+                // test
+                Rectangle box = pet.GetBoundingBox();
+
+                bool colliding = pet.currentLocation.isCollidingPosition(
+                    box,
+                    Game1.viewport,
+                    false,
+                    0,
+                    false,
+                    pet
+                );
+
+                Rectangle playerBox = Game1.player.GetBoundingBox();
+
+                Monitor.Log(
+                    $"Player pos={player.Position}, tile={player.TilePoint}, box={playerBox}, " +
+                    $"Pet pos={pet.Position}, tile={pet.TilePoint}, " +
+                    $"box={box}, my_box = {Utilities.GetRelativeBoundingBox(pet,pet.TilePoint)}, colliding={colliding}, " +
+                    $"controller={(pet.controller == null ? "null" : "active")}, " +
+                    $"moving={pet.isMoving()}",
+                    LogLevel.Debug
+                );
+                // end test
+            }
+            else if (pet.TilePoint == _lastTile && 
+                IsFarmerFarAway(player, pet) && pet.controller != null)
+            {
+                stuckCounter++; 
+            }
+            else
+            {
+                stuckCounter = 0;
+                _lastTile = pet.TilePoint;
+            }
+            _playerLastPosition = player.Position;
+            
+            
+            // check if destination is new & far
             Point? destination = FindDestinationForPet(pet);
             if (destination == null) return;
 
-            Farmer player = Game1.player;
             if (pet.controller != null && _lastDestination == destination) return;
 
-            // new destination, find path
-            Monitor.Log($"destination found {destination}.", LogLevel.Debug);
 
             if (findPathForPet(pet, destination.Value))
             {
@@ -53,23 +117,17 @@ namespace CombatPets
         public void OnWarped(object? sender, WarpedEventArgs e)
         {
             if (pet == null) return;
-            pet.currentLocation = e.NewLocation;
-
+            WarpPet(pet, e.NewLocation);
         }
 
         private Point? FindDestinationForPet(Pet pet)
         {
 
             Farmer player = Game1.player;
-            if (player.currentLocation != pet.currentLocation)
-            {
-                return null; // different location, handle in OnWarped
-            }
-
+            
             if (IsFarmerFarAway(player, pet))
             {
-                // just for now, always back of player
-                return GetTileBehindPlayer();
+                return Utilities.GetTileBehindPlayer(pet, player, player.currentLocation);
             }
 
             return null; // close enough, no need to move
@@ -77,28 +135,42 @@ namespace CombatPets
 
         private bool findPathForPet(Pet pet, Point destination)
         {
+            TakeControlOfPet(pet);
 
-            Stack<Point>? path = PathFindController.findPath(pet.TilePoint, destination, IsAdjacentToEnd, pet.currentLocation,pet,5000);
-
-            if (path == null || path.Count == 0) {
-                Monitor.Log($"No path found for pet {pet.Name} to destination {destination}.", LogLevel.Debug);
-                Monitor.Log($"Pet position: {pet.TilePoint}, Player position: {Game1.player.TilePoint}", LogLevel.Debug);
-                return false;
-            }
-
-            // found path, assign to pet controller
             PathFindController pathFindController = new PathFindController(pet, pet.currentLocation, destination, Game1.player.facingDirection.Get());
 
             pathFindController.NPCSchedule = false;
 
-            pathFindController.pathToEndPoint = path;
-
+            
             pet.controller = pathFindController;
+            pet.addedSpeed = 2f;  // faster to catch up player
 
-            Monitor.Log($"Found path for {pet.Name}. Steps: {path.Count}, Destination: {destination}", LogLevel.Debug);
+            Monitor.Log($"Found path for {pet.Name}. Destination: {destination}", LogLevel.Trace);
+
 
             return true;
 
+        }
+
+        private void TakeControlOfPet(Pet pet)
+        {
+            pet.controller = null;
+
+            pet.Halt();
+
+            pet.Sprite?.ClearAnimation();
+            
+            pet.isSleepingOnFarmerBed.Value = false;
+            
+        }
+
+        // handle warp, different location / map
+
+        private void WarpPet(Pet pet, GameLocation newLocation)
+        {
+            Game1.warpCharacter(pet, newLocation.NameOrUniqueName, Utilities.GetTileBehindPlayer(pet, Game1.player, newLocation));
+
+            Monitor.Log($"Warped pet {pet.Name} to {newLocation.NameOrUniqueName}.", LogLevel.Debug);
         }
 
 
@@ -108,13 +180,9 @@ namespace CombatPets
         private bool IsFarmerFarAway(Farmer farmer, Pet pet)    
         {   
             if (pet == null) return false;
-            return TileDistance(farmer.TilePoint, pet.TilePoint) > Config.FollowDistance;
+            return Utilities.TileDistance(farmer.TilePoint, pet.TilePoint) > Config.FollowDistance;
         }
-        private int TileDistance(Point a, Point b)
-        {
-            return Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
-        }
-
+        
         private bool IsAdjacentToEnd(PathNode currentNode, Point endPoint, GameLocation location, Character c)
         {
             if (Math.Abs((currentNode.x - endPoint.X)) < 2 &&
@@ -123,20 +191,6 @@ namespace CombatPets
             return false;
         }
 
-        private Point GetTileBehindPlayer()
-        {
-            Farmer player = Game1.player;
-            Point tile = player.TilePoint;
-            
-            return player.FacingDirection switch
-            {
-                0 => new Point(tile.X, tile.Y + 1), // player facing up, pet goes below
-                1 => new Point(tile.X - 1, tile.Y), // player facing right, pet goes left
-                2 => new Point(tile.X, tile.Y - 1), // player facing down, pet goes above
-                3 => new Point(tile.X + 1, tile.Y), // player facing left, pet goes right
-                _ => tile
-            };
-        }
 
     }
 }

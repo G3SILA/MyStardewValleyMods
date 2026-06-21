@@ -31,13 +31,15 @@ namespace CombatPets
             _petMove = new PetMove(monitor, Config);
         }
 
+
+        /* initialize services on day started
+         * find pet and set it to pet move */
         public void OnDayStarted(object? sender, DayStartedEventArgs e)
         {
             _pet = _petRegister.getFirstPet();
             _petMove.pet = _pet;
             Monitor.Log($"Bringing {_pet.Name} Today.", LogLevel.Info);
-            _pet.speed = Config.FollowSpeed;
-
+            
         }
         public void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
         {
@@ -55,6 +57,8 @@ namespace CombatPets
         public void OnNpcListChanged(object? sender, NpcListChangedEventArgs e)
         {
             _petRegister.OnNpcListChanged(sender, e);
+
+            // is my pet still present? 
         }
 
         public void OnWarped(object? sender, WarpedEventArgs e)
