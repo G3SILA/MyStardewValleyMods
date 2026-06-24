@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Characters;
+using StardewValley.Pathfinding;
 
 namespace CombatPets
 {
@@ -14,11 +15,11 @@ namespace CombatPets
         {
             Vector2 tileVector = tile.ToVector2();
 
-            // collision?
-            Rectangle boundingBox = GetRelativeBoundingBox(pet, tile);
-
+            Rectangle box = pet.GetBoundingBox();
+            // collision? 
             bool colliding = location.isCollidingPosition(
-                boundingBox, Game1.viewport, false, 0, false, pet);
+                new Rectangle(tile.X * 64, tile.Y * 64, box.Width + 2, box.Height + 2), 
+                Game1.viewport, false, 0, false, pet);
 
             if (colliding) return false;
 

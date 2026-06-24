@@ -5,21 +5,25 @@ using StardewValley;
 using StardewValley.Characters;
 using StardewValley.Pathfinding;
 
-
 namespace CombatPets
 {
     internal class PetMove
     {
+        const int RePathCoolDown = 15;
+        const int NoPathFoundWait = 15;
+
         public Pet pet; 
         private IMonitor Monitor;
         private ModConfig Config;
 
         private Point? _lastDestination; 
         private int _repathCooldown = 0;
+        private int _noPathFoundWait = 0;
 
         private Point _lastTile;
         private Vector2 _playerLastPosition;
         private int stuckCounter = 0;
+
 
         public PetMove(IMonitor monitor, ModConfig config) 
         { 
@@ -31,7 +35,7 @@ namespace CombatPets
         {
             if (pet == null) return;
 
-            // repath per 15 ticks
+            // repath per RePathCoolDown(15) ticks
             if (_repathCooldown > 0)
             {
                 _repathCooldown--;
@@ -109,8 +113,18 @@ namespace CombatPets
             if (findPathForPet(pet, destination.Value))
             {
                 _lastDestination = destination;
-                _repathCooldown = 15;
-            }
+                _repathCooldown = RePathCoolDown;
+                _noPathFoundWait = 0;
+            } else
+            {
+                // warp only if cannot find path for a while
+                ++_noPathFoundWait;
+                if (_noPathFoundWait > NoPathFoundWait)
+                {
+                    WarpPet(pet, player.currentLocation);
+                    _noPathFoundWait = 0;
+                }
+             }
 
         }
 
@@ -137,7 +151,17 @@ namespace CombatPets
         {
             TakeControlOfPet(pet);
 
-            PathFindController pathFindController = new PathFindController(pet, pet.currentLocation, destination, Game1.player.facingDirection.Get());
+            Stack<Point> path = PetPathFinding.findPath(pet.TilePoint, destination, IsAdjacentToEnd,
+                pet.currentLocation, pet, 500);
+
+            if (path == null) 
+            { 
+                Monitor.Log("No path found for pet " + pet.Name + " to destination " + destination, LogLevel.Warn);
+                return false;
+            }
+
+            PathFindController pathFindController = new PathFindController(path, pet, pet.currentLocation);
+            pathFindController.finalFacingDirection = Game1.player.facingDirection.Get();
 
             pathFindController.NPCSchedule = false;
 
@@ -173,10 +197,6 @@ namespace CombatPets
             Monitor.Log($"Warped pet {pet.Name} to {newLocation.NameOrUniqueName}.", LogLevel.Debug);
         }
 
-
-        /*
-            random helpers 
-        */
         private bool IsFarmerFarAway(Farmer farmer, Pet pet)    
         {   
             if (pet == null) return false;
