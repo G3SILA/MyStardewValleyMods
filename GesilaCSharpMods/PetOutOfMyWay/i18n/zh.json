@@ -1,0 +1,10 @@
+{
+  "config.enabled.name": "启用宠物让路",
+  "config.enabled.tooltip": "启用整个模组。",
+
+  "config.push-before-shaking.name": "开始抖动前的推挤时间",
+  "config.push-before-shaking.tooltip": "原版数值：300。",
+
+  "config.push-before-pass-through.name": "允许穿过前的推挤时间",
+  "config.push-before-pass-through.tooltip": "原版数值：750。"
+}

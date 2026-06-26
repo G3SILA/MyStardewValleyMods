@@ -1,0 +1,10 @@
+{
+  "config.enabled.name": "Enable Pet Out Of Way",
+  "config.enabled.tooltip": "Enable the entire mod.",
+
+  "config.push-before-shaking.name": "Time Push Before Start Shaking",
+  "config.push-before-shaking.tooltip": "Vanilla value: 300.",
+
+  "config.push-before-pass-through.name": "Time Push Before Pass Through",
+  "config.push-before-pass-through.tooltip": "Vanilla value: 750."
+}

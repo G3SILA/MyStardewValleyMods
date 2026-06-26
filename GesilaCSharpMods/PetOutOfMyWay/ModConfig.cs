@@ -1,6 +1,4 @@
 ﻿
-using System.Runtime.InteropServices;
-
 namespace PetOutOfMyWay
 {
     public sealed class ModConfig
