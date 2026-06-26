@@ -12,19 +12,19 @@ namespace PetOutOfMyWay
     internal class PetPushPatch
     {
         private static IMonitor Monitor;
-        private static ModConfig Config;
-        public static void Initialize(IMonitor monitor, ModConfig config)
+        private static Func<ModConfig>? GetConfig;
+        public static void Initialize(IMonitor monitor, Func<ModConfig> getConfig)
         {
-            Config = config;
             Monitor = monitor;
+            GetConfig = getConfig;
         }
 
         public static void getTimeFarmerMustPushBeforeStartShaking_Postfix(ref int __result) 
         {
             try
             {
-                __result = Config.TimeFarmerMustPushBeforeStartShaking;
-                Monitor.Log($"push time before shake: {Config.TimeFarmerMustPushBeforeStartShaking}", LogLevel.Trace);
+                __result = GetConfig!().TimeFarmerMustPushBeforeStartShaking;
+                Monitor.Log($"push time before shake: {GetConfig!().TimeFarmerMustPushBeforeStartShaking}", LogLevel.Trace);
             } catch
             {
                 Monitor.Log($"Modified 'push time before shake' error", LogLevel.Warn);
@@ -36,8 +36,8 @@ namespace PetOutOfMyWay
         {
             try
             {
-                __result = Config.TimeFarmerMustPushBeforePassingThrough;
-                Monitor.Log($"push time before shake: {Config.TimeFarmerMustPushBeforePassingThrough}", LogLevel.Trace);
+                __result = GetConfig!().TimeFarmerMustPushBeforePassingThrough;
+                Monitor.Log($"push time before shake: {GetConfig!().TimeFarmerMustPushBeforePassingThrough}", LogLevel.Trace);
             }
             catch
             {

@@ -11,12 +11,12 @@ namespace PetOutOfMyWay
 {
     internal sealed class ModEntry : Mod
     {
-        private ModConfig _config = new();
+        public ModConfig _config = new();
         public override void Entry(IModHelper helper)
         {
             this.Helper.Events.GameLoop.GameLaunched += OnGameLaunched;
 
-            PetPushPatch.Initialize(Monitor, _config);
+            PetPushPatch.Initialize(Monitor, () => _config);
 
             var harmony = new Harmony(this.ModManifest.UniqueID);
 
@@ -37,7 +37,8 @@ namespace PetOutOfMyWay
 
         private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
         {
-
+            GenericModConfigMenu.Initialize(this);
+            GenericModConfigMenu.InitializeMenu();
         }
 
     }
