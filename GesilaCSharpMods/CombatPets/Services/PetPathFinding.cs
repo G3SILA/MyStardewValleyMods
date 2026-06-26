@@ -23,14 +23,14 @@ namespace CombatPets
             { 0, -1 }
         };
 
-        private ModConfig Config; 
+        private static ModConfig Config; 
 
-        public PetPathFinding(ModConfig config)
+        public static void initialize(ModConfig config)
         {
-            this.Config = config;
+            Config = config;
         }
 
-        public Stack<Point> findPath(Point startPoint, Point endPoint, isAtEnd endPointFunction, GameLocation location, Character character, int limit)
+        public static Stack<Point> findPath(Point startPoint, Point endPoint, isAtEnd endPointFunction, GameLocation location, Character character, int limit)
         {
             if (Interlocked.Increment(ref _counter) != 1)
             {

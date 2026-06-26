@@ -34,7 +34,7 @@ namespace CombatPets
 
         private void OnWarped(object? sender, WarpedEventArgs e)
         {
-
+            _petFollowManager.OnWarped(sender, e);
 
         }
 

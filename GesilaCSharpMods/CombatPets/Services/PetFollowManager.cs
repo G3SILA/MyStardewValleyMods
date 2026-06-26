@@ -14,8 +14,8 @@ namespace CombatPets
 {
     internal class PetFollowManager
     {
-        private readonly IMonitor Monitor;
-        private readonly ModConfig Config;
+        private static IMonitor Monitor;
+        private static ModConfig Config;
 
         private PetRegister _petRegister;
         private PetMove _petMove;
