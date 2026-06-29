@@ -15,7 +15,7 @@ namespace CombatPets
     internal class PetFollowManager
     {
         private static IMonitor Monitor;
-        private static ModConfig Config;
+        private static Func<ModConfig>? GetConfig;
 
         private PetRegister _petRegister;
         private PetMove _petMove;
@@ -23,12 +23,12 @@ namespace CombatPets
         // for now, just one pet
         private Pet? _pet;
         
-        public PetFollowManager(IMonitor monitor, ModConfig config)
+        public PetFollowManager(IMonitor monitor, Func<ModConfig> getConfig)
         {
             Monitor = monitor;
-            Config = config;
+            GetConfig = getConfig;
             _petRegister = new PetRegister(monitor);
-            _petMove = new PetMove(monitor, Config);
+            _petMove = new PetMove(monitor, getConfig);
         }
 
 

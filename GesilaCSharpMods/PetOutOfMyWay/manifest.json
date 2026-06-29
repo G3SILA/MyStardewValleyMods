@@ -5,5 +5,5 @@
   "Description": "No more pet stuck in your way back to bed! Pass through it without wait.",
   "UniqueID": "Gesila.PetOutOfMyWay",
   "EntryDll": "PetOutOfMyWay.dll",
-  "UpdateKeys": []
+  "UpdateKeys": ["Nexus:48260"]
 }

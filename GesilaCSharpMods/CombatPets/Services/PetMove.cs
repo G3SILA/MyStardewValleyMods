@@ -11,7 +11,7 @@ namespace CombatPets
     {
         public Pet pet; 
         private static IMonitor Monitor;
-        private static ModConfig Config;
+        private static Func<ModConfig>? GetConfig;
 
         private Point? _lastDestination; 
         private int _repathCooldown = 0;
@@ -23,10 +23,11 @@ namespace CombatPets
 
         const int RePathCoolDown = 15;
 
-        public PetMove(IMonitor monitor, ModConfig config) 
+        public PetMove(IMonitor monitor, Func<ModConfig>? getConfig) 
         { 
             Monitor = monitor;
-            Config = config;
+            GetConfig = getConfig;
+            PetPathFinding.initialize(GetConfig);
         }
 
         [System.Diagnostics.Conditional("DEBUG")]
@@ -122,7 +123,7 @@ namespace CombatPets
             {
                 // warp only if cannot find path for a while
                 ++_noPathFoundWait;
-                if (_noPathFoundWait > Config.TimeToWarpWhenNoPathFound)
+                if (_noPathFoundWait > GetConfig!().TimeToWarpWhenNoPathFound)
                 {
                     WarpPet(pet, player.currentLocation);
                     _noPathFoundWait = 0;
@@ -162,8 +163,6 @@ namespace CombatPets
         {
             TakeControlOfPet(pet);
 
-            PetPathFinding.initialize(Config);
-
             Stack<Point> path = PetPathFinding.findPath(pet.TilePoint, destination, IsAdjacentToEnd,
                 pet.currentLocation, pet, 500);
 
@@ -181,7 +180,7 @@ namespace CombatPets
             
             pet.controller = pathFindController;
 
-            pet.addedSpeed = Config.AddedFollowSpeed;  // faster to catch up player
+            pet.addedSpeed = GetConfig!().AddedFollowSpeed;  // faster to catch up player
 
             Monitor.Log($"Found path for {pet.Name}. Destination: {destination}", LogLevel.Trace);
 
@@ -206,7 +205,7 @@ namespace CombatPets
 
         private void WarpPet(Pet pet, GameLocation newLocation, bool jump = true)
         {
-            if (jump && Config.SoundOnJumpPet)
+            if (jump && GetConfig!().SoundOnJumpPet)
             {
                 pet.jump();
             }
@@ -222,7 +221,7 @@ namespace CombatPets
         private bool IsFarmerFarAway(Farmer farmer, Pet pet)    
         {   
             if (pet == null) return false;
-            return Utilities.TileDistance(farmer.TilePoint, pet.TilePoint) > Config.FollowDistance;
+            return Utilities.TileDistance(farmer.TilePoint, pet.TilePoint) > GetConfig!().FollowDistance;
         }
         
         private bool IsAdjacentToEnd(PathNode currentNode, Point endPoint, GameLocation location, Character c)

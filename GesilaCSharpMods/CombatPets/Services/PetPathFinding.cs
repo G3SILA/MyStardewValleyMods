@@ -23,11 +23,11 @@ namespace CombatPets
             { 0, -1 }
         };
 
-        private static ModConfig Config; 
+        private static Func<ModConfig> GetConfig; 
 
-        public static void initialize(ModConfig config)
+        public static void initialize(Func<ModConfig> getConfig)
         {
-            Config = config;
+            GetConfig = getConfig;
         }
 
         public static Stack<Point> findPath(Point startPoint, Point endPoint, isAtEnd endPointFunction, GameLocation location, Character character, int limit)
@@ -79,7 +79,7 @@ namespace CombatPets
 
                         // modified part
                         Rectangle collisionBox;
-                        if (Config.LargerCollisionEnabled)
+                        if (GetConfig!().LargerCollisionEnabled)
                         {
                             collisionBox = new Rectangle(pathNode2.x * 64 - 16, pathNode2.y * 64 - 16, 100, 62);
                         } else

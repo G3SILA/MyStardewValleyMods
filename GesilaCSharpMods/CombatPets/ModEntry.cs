@@ -14,8 +14,7 @@ namespace CombatPets
         
         public override void Entry(IModHelper helper)
         {
-            this._config = this.Helper.ReadConfig<ModConfig>();
-            _petFollowManager = new PetFollowManager(Monitor, _config);
+            _petFollowManager = new PetFollowManager(Monitor, () => _config);
 
             helper.Events.GameLoop.DayStarted += this.OnDayStarted;
             helper.Events.Player.Warped += this.OnWarped;
