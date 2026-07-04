@@ -19,6 +19,7 @@ namespace CombatPets
 
         private PetRegister _petRegister;
         private PetMove _petMove;
+        private CombatService _combatService;
 
         // for now, just one pet
         private Pet? _pet;
@@ -29,6 +30,7 @@ namespace CombatPets
             GetConfig = getConfig;
             _petRegister = new PetRegister(monitor);
             _petMove = new PetMove(monitor, getConfig);
+
         }
 
 
@@ -39,7 +41,8 @@ namespace CombatPets
             _pet = _petRegister.getFirstPet();
             _petMove.pet = _pet;
             Monitor.Log($"Bringing {_pet.Name} Today.", LogLevel.Info);
-            
+            _combatService = new CombatService(Monitor, GetConfig, _pet);
+
         }
         public void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
         {
@@ -52,6 +55,7 @@ namespace CombatPets
             }
 
             _petMove.OnUpdateTicked(sender, e);
+            _combatService.OnUpdateTicked(sender, e);
         }
 
         public void OnNpcListChanged(object? sender, NpcListChangedEventArgs e)

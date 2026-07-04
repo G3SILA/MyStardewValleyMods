@@ -14,8 +14,15 @@ namespace CombatPets
 
         // 60 ticks = 1 second, time in ticks; this property is more important with LargerCollisionEnabled
         public int TimeToWarpWhenNoPathFound { get; set; } = 15;
+
+        public PetStrength PetStrength { get; set; } = PetStrength.Normal;
     }
 
+    public enum PetStrength
+    {
+        Helpful,
+        Normal,
+        Overpowered
+    }
 
-    
 }

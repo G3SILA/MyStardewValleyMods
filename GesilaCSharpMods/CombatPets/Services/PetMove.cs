@@ -70,31 +70,6 @@ namespace CombatPets
                     stuckCounter = 0;
                     return;
                 }
-
-#if DEBUG
-                    
-                Rectangle box = pet.GetBoundingBox();
-
-                bool colliding = pet.currentLocation.isCollidingPosition(
-                    box,
-                    Game1.viewport,
-                    false,
-                    0,
-                    false,
-                    pet
-                );
-
-                Rectangle playerBox = Game1.player.GetBoundingBox();
-
-                Monitor.Log(
-                    $"Player pos={player.Position}, tile={player.TilePoint}, box={playerBox}, " +
-                    $"Pet pos={pet.Position}, tile={pet.TilePoint}, " +
-                    $"box={box}, my_box = {Utilities.GetRelativeBoundingBox(pet,pet.TilePoint)}, colliding={colliding}, " +
-                    $"controller={(pet.controller == null ? "null" : "active")}, " +
-                    $"moving={pet.isMoving()}",
-                    LogLevel.Debug
-                );
-                #endif
             }
             else if (pet.TilePoint == _lastTile && 
                 IsFarmerFarAway(player, pet) && pet.controller != null)

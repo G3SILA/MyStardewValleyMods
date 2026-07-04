@@ -7,6 +7,27 @@ namespace CombatPets
 {
     internal static class Utilities
     {
+        public static Vector2 GetPositionOfDirection(Vector2 position, int direction)
+        {
+            Vector2 result = position;
+            switch (direction)
+            {
+                case 0:
+                    result = new Vector2(position.X, position.Y - 64);
+                    break;
+                case 1:
+                    result = new Vector2(position.X + 64, position.Y);
+                    break;
+                case 2:
+                    result = new Vector2(position.X, position.Y + 64);
+                    break;
+                case 3:
+                    result = new Vector2(position.X - 64, position.Y);
+                    break;
+            }
+
+            return result;
+        }
         public static int TileDistance(Point a, Point b)
         {
             return Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
