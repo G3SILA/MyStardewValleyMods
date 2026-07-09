@@ -23,6 +23,8 @@ namespace CombatPets
 
         const int RePathCoolDown = 15;
 
+        private AnimationManager _animationManager = new();
+
         public PetMove(IMonitor monitor, Func<ModConfig>? getConfig) 
         { 
             Monitor = monitor;
@@ -55,13 +57,13 @@ namespace CombatPets
                 return;
             }
 
+            //_animationManager.DebugArea(pet.currentLocation, pet.GetBoundingBox());
+
             // if stucked for 1 second and player is moving
             if (pet.TilePoint == _lastTile && 
                 _playerLastPosition != player.Position && pet.controller != null)
             {
                 stuckCounter += 2; // player move slow, count faster
-
-                DebugLog($"{stuckCounter}, player: {player.Position}", LogLevel.Debug);
             
                 if (stuckCounter > 60) 
                 {
@@ -143,7 +145,7 @@ namespace CombatPets
 
             if (path == null) 
             { 
-                Monitor.Log("No path found for pet " + pet.Name + " to destination " + destination, LogLevel.Debug);
+                DebugLog("No path found for pet " + pet.Name + " to destination " + destination, LogLevel.Debug);
                 return false;
             }
 
@@ -157,7 +159,7 @@ namespace CombatPets
 
             pet.addedSpeed = GetConfig!().AddedFollowSpeed;  // faster to catch up player
 
-            Monitor.Log($"Found path for {pet.Name}. Destination: {destination}", LogLevel.Trace);
+            DebugLog($"Found path for {pet.Name}. Destination: {destination}", LogLevel.Trace);
 
 
             return true;

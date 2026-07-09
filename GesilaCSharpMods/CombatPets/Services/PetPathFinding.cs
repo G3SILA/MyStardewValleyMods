@@ -23,7 +23,8 @@ namespace CombatPets
             { 0, -1 }
         };
 
-        private static Func<ModConfig> GetConfig; 
+        private static Func<ModConfig> GetConfig;
+        private static AnimationManager _animationManager = new();
 
         public static void initialize(Func<ModConfig> getConfig)
         {
@@ -86,12 +87,13 @@ namespace CombatPets
                         {
                             collisionBox = new Rectangle(pathNode2.x * 64, pathNode2.y * 64, 100, 62);
                         }
-                                                
+                        
                         if (!flag && location.isCollidingPosition(collisionBox, Game1.viewport, character is Farmer, 0, glider: false, character, pathfinding: true))
                         {
                             closedList.Add(item);
                             continue;
                         }
+                        // _animationManager.DebugArea(location, collisionBox, Color.Blue, 0.3f, 500f);
                         //
 
                         int priority = num2 + (Math.Abs(endPoint.X - num3) + Math.Abs(endPoint.Y - num4));
