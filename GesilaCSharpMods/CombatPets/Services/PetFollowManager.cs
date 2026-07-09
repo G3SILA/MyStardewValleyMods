@@ -15,6 +15,7 @@ namespace CombatPets
     internal class PetFollowManager
     {
         private static IMonitor Monitor;
+        private static IModHelper Helper;
         private static Func<ModConfig>? GetConfig;
 
         private PetRegister _petRegister;
@@ -24,10 +25,11 @@ namespace CombatPets
         // for now, just one pet
         private Pet? _pet;
         
-        public PetFollowManager(IMonitor monitor, Func<ModConfig> getConfig)
+        public PetFollowManager(IMonitor monitor, Func<ModConfig> getConfig, IModHelper helper)
         {
             Monitor = monitor;
             GetConfig = getConfig;
+            Helper = helper;
             _petRegister = new PetRegister(monitor);
             _petMove = new PetMove(monitor, getConfig);
 
@@ -41,7 +43,7 @@ namespace CombatPets
             _pet = _petRegister.getFirstPet();
             _petMove.pet = _pet;
             Monitor.Log($"Bringing {_pet.Name} Today.", LogLevel.Info);
-            _combatService = new CombatService(Monitor, GetConfig, _pet);
+            _combatService = new CombatService(Monitor, GetConfig, Helper, _pet);
 
         }
         public void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)

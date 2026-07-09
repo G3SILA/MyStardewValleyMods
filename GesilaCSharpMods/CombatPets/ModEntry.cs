@@ -1,9 +1,10 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using System;
 
 namespace CombatPets
 {
@@ -11,10 +12,10 @@ namespace CombatPets
     {
         private ModConfig _config = new();
         private PetFollowManager _petFollowManager;
-        
+
         public override void Entry(IModHelper helper)
         {
-            _petFollowManager = new PetFollowManager(Monitor, () => _config);
+            _petFollowManager = new PetFollowManager(Monitor, () => _config, this.Helper);
 
             helper.Events.GameLoop.DayStarted += this.OnDayStarted;
             helper.Events.Player.Warped += this.OnWarped;

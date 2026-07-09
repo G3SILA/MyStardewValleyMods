@@ -15,18 +15,21 @@ namespace CombatPets
         private static IMonitor Monitor;
         private static Func<ModConfig>? GetConfig;
 
+        private static AnimationManager _animationManager;
+
         private int attackCoolDown = 0;
 
-        public CombatService(IMonitor monitor, Func<ModConfig>? getConfig, Pet pet)
+        public CombatService(IMonitor monitor, Func<ModConfig>? getConfig, IModHelper helper, Pet pet)
         {
             Monitor = monitor;
+            _animationManager = new AnimationManager(helper);
             GetConfig = getConfig;
             this.pet = pet;
         }
 
         public void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
         {
-            if (!e.IsMultipleOf(30)) return; // only check every 30 ticks (0.5 seconds)
+            if (!e.IsMultipleOf(15)) return; // only check every 15 ticks (0.25 seconds)
 
             if (pet == null) return;
 
@@ -47,7 +50,7 @@ namespace CombatPets
             bool damaged = attackMonster();
             if (damaged)
             {
-                attackCoolDown = 1; 
+                attackCoolDown = 2; 
             } else
             {
                 attackCoolDown = 0;
@@ -74,6 +77,11 @@ namespace CombatPets
                    manual knock back? (avoid direction issue? play first before try.)
                    inherit lucky etc. buff from player?
              */
+
+            if (damaged)
+            {
+                _animationManager.DrawAttack(location, damageArea, pet.FacingDirection == 1 || pet.FacingDirection == 3);
+            }
             Monitor.Log($"Pet position: {pet.position.Value}, pet attack: {damageArea}", LogLevel.Debug);
             Monitor.Log($"Attack status {damaged}", LogLevel.Debug);
             return damaged;
@@ -82,8 +90,13 @@ namespace CombatPets
 
         private Rectangle getAttackArea()
         {
-            Vector2 nextPoint = Utilities.GetPositionOfDirection(pet.Position, pet.getFacingDirection());
-            Rectangle damageArea = new Rectangle((int)nextPoint.X, (int)nextPoint.Y, 100, 100);
+            int direction = pet.getFacingDirection();
+            Vector2 nextPoint = Utilities.GetPositionOfDirection(pet.getStandingPosition(), direction);
+            Rectangle damageArea = new Rectangle((int)nextPoint.X - 50, (int)nextPoint.Y - 50, 100, 100);
+            if (direction == 1 || direction == 3)
+            {
+                damageArea = new Rectangle((int)nextPoint.X - 50, (int)nextPoint.Y - 70, 100, 100);
+            } 
             return damageArea;
         }
 
