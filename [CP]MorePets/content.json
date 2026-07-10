@@ -8,6 +8,11 @@
         },
         {
             "Action": "Load",
+            "Target": "Mods/{{ModId}}/assets/cat6",
+            "FromFile": "assets/cat6.png"
+        },
+        {
+            "Action": "Load",
             "Target": "Mods/{{ModId}}/assets/icons",
             "FromFile": "assets/icons.png"
         },
@@ -23,6 +28,29 @@
                     "IconSourceRect": {
                         "X": 0,
                         "Y": 0,
+                        "Width": 16,
+                        "Height": 16
+                    },
+                    "CanBeChosenAtStart": true,
+                    "CanBeAdoptedFromMarnie": true,
+                    "AdoptionPrice": 40000,
+                    "BarkOverride": null,
+                    "VoicePitch": 1.0
+                }
+            }
+        },
+        {
+            "Action": "EditData",
+            "Target": "Data/Pets",
+            "TargetField": [ "Cat", "Breeds" ],
+            "Entries": {
+                "cat5": {
+                    "Id": "6",
+                    "Texture": "Mods/{{ModId}}/assets/cat6",
+                    "IconTexture": "Mods/{{ModId}}/assets/icons",
+                    "IconSourceRect": {
+                        "X": 0,
+                        "Y": 16,
                         "Width": 16,
                         "Height": 16
                     },
