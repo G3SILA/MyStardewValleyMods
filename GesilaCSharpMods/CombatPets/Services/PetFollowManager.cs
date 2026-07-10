@@ -2,13 +2,7 @@
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Characters;
-using StardewValley.Pathfinding;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+
 
 namespace CombatPets
 {
@@ -16,7 +10,7 @@ namespace CombatPets
     {
         private static IMonitor Monitor;
         private static IModHelper Helper;
-        private static Func<ModConfig>? GetConfig;
+        private static Func<ModConfig> GetConfig;
 
         private PetRegister _petRegister;
         private PetMove _petMove;
@@ -56,8 +50,14 @@ namespace CombatPets
                 return;
             }
 
-            _petMove.OnUpdateTicked(sender, e);
-            _combatService.OnUpdateTicked(sender, e);
+            if (GetConfig().EnablePetFollowing)
+            {
+                _petMove.OnUpdateTicked(sender, e);
+            }
+
+            if (GetConfig().EnableCombat) {
+                _combatService.OnUpdateTicked(sender, e);
+            }
         }
 
         public void OnNpcListChanged(object? sender, NpcListChangedEventArgs e)
@@ -70,8 +70,12 @@ namespace CombatPets
         public void OnWarped(object? sender, WarpedEventArgs e)
         {
             if (_pet == null) return;
-            _petMove.OnWarped(sender, e);
 
+            if (GetConfig().EnablePetFollowing)
+            {
+                _petMove.OnWarped(sender, e);
+            }
+           
         }
         
     }

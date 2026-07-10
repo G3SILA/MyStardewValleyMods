@@ -37,12 +37,13 @@ namespace CombatPets
                 sourceRect = new Rectangle(0, 0, 16, 16),
                 sourceRectStartingPos = Vector2.Zero,
                 alpha = 1f,
-                layerDepth = 1f
+                layerDepth = 0f
             };
 
             location.temporarySprites.Add(attack);
         }
 
+        // show the area once
         public void DebugArea(GameLocation location, Rectangle area)
         {
             DebugArea(location, area, Color.Red, 0.35f, 250f);

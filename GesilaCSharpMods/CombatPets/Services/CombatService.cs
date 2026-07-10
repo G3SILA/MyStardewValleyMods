@@ -72,18 +72,12 @@ namespace CombatPets
             // inherit lucky etc. buff from player
             bool damaged = location.damageMonster(damageArea, baseDamage, (int)(baseDamage * 1.2f), false, player);
 
-            /*
-             TODO: area damage, size / direction
-                   manual knock back? (avoid direction issue? play first before try.)
-                   inherit lucky etc. buff from player?
-             */
 
             if (damaged)
             {
                 _animationManager.DrawAttack(location, damageArea, pet.FacingDirection == 1 || pet.FacingDirection == 3);
             }
-            Monitor.Log($"Pet position: {pet.position.Value}, pet attack: {damageArea}", LogLevel.Debug);
-            Monitor.Log($"Attack status {damaged}", LogLevel.Debug);
+            Monitor.Log($"Attack status {damaged}", LogLevel.Trace);
             return damaged;
 
         }

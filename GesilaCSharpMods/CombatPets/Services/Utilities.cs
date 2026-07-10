@@ -7,6 +7,35 @@ namespace CombatPets
 {
     internal static class Utilities
     {
+        public static int GetDirectionFromTileToTile(Point fromTile, Point toTile)
+        {
+            int dx = toTile.X - fromTile.X;
+            int dy = toTile.Y - fromTile.Y;
+
+            // X direction
+            if (dx > 0)
+                return 1; // right
+
+            if (dx < 0)
+                return 3; // left
+
+            // Y direction
+            if (dy > 0)
+                return 2; // down
+
+            if (dy < 0)
+                return 0; // up
+
+            // Same tile, no direction
+            return -1;
+        }
+
+        public static bool IsCharacterFarAway(Character character, Pet pet, int distance)
+        {
+            if (pet == null || character == null) return false;
+            return TileDistance(character.TilePoint, pet.TilePoint) > distance;
+        }
+
         public static Vector2 GetPositionOfDirection(Vector2 position, int direction)
         {
             Vector2 result = position;
