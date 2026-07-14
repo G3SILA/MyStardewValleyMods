@@ -6,7 +6,7 @@ using StardewValley.Characters;
 
 namespace CombatPets
 {
-    internal class PetFollowManager
+    internal class PetManager
     {
         private static IMonitor Monitor;
         private static IModHelper Helper;
@@ -19,7 +19,7 @@ namespace CombatPets
         // for now, just one pet
         private Pet? _pet;
         
-        public PetFollowManager(IMonitor monitor, Func<ModConfig> getConfig, IModHelper helper)
+        public PetManager(IMonitor monitor, Func<ModConfig> getConfig, IModHelper helper)
         {
             Monitor = monitor;
             GetConfig = getConfig;

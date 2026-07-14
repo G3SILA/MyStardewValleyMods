@@ -11,11 +11,11 @@ namespace CombatPets
     internal sealed class ModEntry : Mod
     {
         private ModConfig _config = new();
-        private PetFollowManager _petFollowManager;
+        private PetManager _petFollowManager;
 
         public override void Entry(IModHelper helper)
         {
-            _petFollowManager = new PetFollowManager(Monitor, () => _config, this.Helper);
+            _petFollowManager = new PetManager(Monitor, () => _config, this.Helper);
 
             helper.Events.GameLoop.DayStarted += this.OnDayStarted;
             helper.Events.Player.Warped += this.OnWarped;
