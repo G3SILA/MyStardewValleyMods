@@ -95,7 +95,8 @@ namespace CombatPets
     {
         Idle,
         Following,
-        Attacking,
+        Combat,    // in mine & enable combat
+        Attacking, // attack monster animation
         Defeated
     }
 }

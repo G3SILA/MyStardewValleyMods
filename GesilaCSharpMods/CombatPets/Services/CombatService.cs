@@ -31,11 +31,17 @@ namespace CombatPets
             PetState = state;
         }
 
+        // only called when EnableCombat is true
         public void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
         {
             if (!e.IsMultipleOf(15)) return; // only check every 15 ticks (0.25 seconds)
 
             if (pet == null) return;
+
+            if (PetState.State == PetStateEnum.Defeated)
+            {
+                return;
+            }
 
             Farmer player = Game1.player;
             GameLocation location = pet.currentLocation;
@@ -44,7 +50,14 @@ namespace CombatPets
                 return;
             }
 
+
+            if (PetState.State != PetStateEnum.Attacking)
+            {
+                PetState.State = PetStateEnum.Combat;
+            }
+
             Monitor.Log($"Health: {PetState.Health}", LogLevel.Debug);
+            Monitor.Log($"State: {PetState.State}", LogLevel.Debug);
 
             checkDamageFromMonster(location);
 
@@ -85,8 +98,14 @@ namespace CombatPets
             {
                 PlayAttackEffects();
                 _animationManager.DrawAttack(location, damageArea, pet.FacingDirection == 1 || pet.FacingDirection == 3);
+
+                PetState.State = PetStateEnum.Attacking;
+                DelayedAction.functionAfterDelay(() => {
+                    if (PetState.IsAlive()) PetState.State = PetStateEnum.Combat;
+                    else PetState.State = PetStateEnum.Defeated;
+                }, 300);
             }
-            Monitor.Log($"Attack status {damaged}", LogLevel.Trace);
+            Monitor.Log($"Did perform attack: {damaged}", LogLevel.Trace);
             return damaged;
 
         }
@@ -109,7 +128,7 @@ namespace CombatPets
         {
             int friendship = pet.friendshipTowardFarmer.Value;
 
-            float strengthMagnification = getStrengthMagnification();
+            float strengthMagnification = PetState.getStrengthMagnification();
 
             int baseDamage = (int) ((friendship / 150 + 2) * strengthMagnification);
 
@@ -206,6 +225,7 @@ namespace CombatPets
             if (!PetState.IsAlive())
             {
                 PetState.State = PetStateEnum.Defeated;
+                Game1.showGlobalMessage($"{pet.name} is exhausted today, cannot fight anymore.");
             }
 
         }
