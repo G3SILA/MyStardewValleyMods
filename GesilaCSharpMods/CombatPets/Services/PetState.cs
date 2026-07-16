@@ -1,4 +1,5 @@
-﻿using StardewModdingAPI.Events;
+﻿using StardewModdingAPI;
+using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Characters;
 
@@ -6,10 +7,15 @@ namespace CombatPets
 {
     internal class PetState
     {
-        Pet pet; 
-        public PetState(Pet pet)
+        public Pet pet; 
+        private static Func<ModConfig>? GetConfig;
+        private static IMonitor Monitor;
+
+        public PetState(Pet pet, Func<ModConfig>? getConfig, IMonitor monitor)
         {
             this.pet = pet;
+            GetConfig = getConfig;
+            Monitor = monitor;
         }
 
         public int MaxHealth;
@@ -19,9 +25,31 @@ namespace CombatPets
         public void initialize()
         {
             Farmer player = Game1.player;
-            MaxHealth = pet.friendshipTowardFarmer.Value / 10 + 50;
+            MaxHealth = (int)((pet.friendshipTowardFarmer.Value / 10 + 50) * getStrengthMagnification());
             Health = MaxHealth;
             State = PetStateEnum.Idle;
+        }
+
+        public float getStrengthMagnification()
+        {
+            PetStrength strength = GetConfig!().PetStrength;
+            if (strength == PetStrength.Helpful)
+            {
+                return 0.75f;
+            }
+            else if (strength == PetStrength.Normal)
+            {
+                return 1.0f;
+            }
+            else if (strength == PetStrength.Overpowered)
+            {
+                return 1.5f;
+            }
+            else
+            {
+                Monitor.Log($"Unknown pet strength: {strength}", LogLevel.Warn);
+                return 1.0f;
+            }
         }
 
         public bool IsInvincible()

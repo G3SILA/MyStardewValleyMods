@@ -6,9 +6,6 @@ using StardewValley.Characters;
 using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Monsters;
-using StardewValley.Objects.Trinkets;
-using StardewValley.Tools;
-using static System.Net.Mime.MediaTypeNames;
 
 
 namespace CombatPets
@@ -117,28 +114,6 @@ namespace CombatPets
             int baseDamage = (int) ((friendship / 150 + 2) * strengthMagnification);
 
             return baseDamage;
-        }
-
-        private float getStrengthMagnification()
-        {
-            PetStrength strength = GetConfig!().PetStrength;
-            if (strength == PetStrength.Helpful)
-            {
-                return 0.75f;
-            }
-            else if (strength == PetStrength.Normal)
-            {
-                return 1.0f;
-            }
-            else if (strength == PetStrength.Overpowered)
-            {
-                return 1.5f;
-            }
-            else
-            {
-                Monitor.Log($"Unknown pet strength: {strength}", LogLevel.Warn);
-                return 1.0f;
-            }
         }
 
         private void PlayAttackEffects()
