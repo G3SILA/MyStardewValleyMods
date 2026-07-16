@@ -8,6 +8,7 @@ using StardewValley.Menus;
 using StardewValley.Monsters;
 using StardewValley.Objects.Trinkets;
 using StardewValley.Tools;
+using static System.Net.Mime.MediaTypeNames;
 
 
 namespace CombatPets
@@ -45,6 +46,8 @@ namespace CombatPets
             {
                 return;
             }
+
+            Monitor.Log($"Health: {PetState.Health}", LogLevel.Debug);
 
             checkDamageFromMonster(location);
 
@@ -224,6 +227,11 @@ namespace CombatPets
             pet.playNearbySoundAll("ow");
 
             Monitor.Log($"Damage: {damage}, Health: {PetState.Health}", LogLevel.Debug);
+
+            if (!PetState.IsAlive())
+            {
+                PetState.State = PetStateEnum.Defeated;
+            }
 
         }
 

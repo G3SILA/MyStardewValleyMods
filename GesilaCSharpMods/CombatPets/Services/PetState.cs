@@ -12,6 +12,10 @@ namespace CombatPets
             this.pet = pet;
         }
 
+        public int MaxHealth;
+        public int Health;
+        public PetStateEnum State { get; set; } = PetStateEnum.Idle;
+
         public void initialize()
         {
             Farmer player = Game1.player;
@@ -19,9 +23,6 @@ namespace CombatPets
             Health = MaxHealth;
             State = PetStateEnum.Idle;
         }
-        public int MaxHealth;
-        public int Health;
-        public PetStateEnum State { get; set; } = PetStateEnum.Idle;
 
         public bool IsInvincible()
         {
@@ -43,6 +44,16 @@ namespace CombatPets
             if (InvincibleCountDown > 0)
             {
                 InvincibleCountDown--;
+            }
+
+            // restore health over time
+            if (e.IsMultipleOf(60) && State != PetStateEnum.Defeated)
+            {
+                if (Health > 0 && Health < MaxHealth)
+                {
+                    ++Health;
+                }
+
             }
         }
 
