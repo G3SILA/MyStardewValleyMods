@@ -4,7 +4,10 @@ using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Characters;
 using StardewValley.Locations;
+using StardewValley.Menus;
 using StardewValley.Monsters;
+using StardewValley.Objects.Trinkets;
+using StardewValley.Tools;
 
 
 namespace CombatPets
@@ -15,16 +18,19 @@ namespace CombatPets
         private static IMonitor Monitor;
         private static Func<ModConfig>? GetConfig;
 
+        private PetState PetState;
+
         private static AnimationManager _animationManager;
 
         private int attackCoolDown = 0;
 
-        public CombatService(IMonitor monitor, Func<ModConfig>? getConfig, IModHelper helper, Pet pet)
+        public CombatService(IMonitor monitor, Func<ModConfig>? getConfig, IModHelper helper, Pet pet, PetState state)
         {
             Monitor = monitor;
             _animationManager = new AnimationManager(helper);
             GetConfig = getConfig;
             this.pet = pet;
+            PetState = state;
         }
 
         public void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
@@ -39,6 +45,8 @@ namespace CombatPets
             {
                 return;
             }
+
+            checkDamageFromMonster(location);
 
             if (attackCoolDown > 0)
             {
@@ -75,6 +83,7 @@ namespace CombatPets
 
             if (damaged)
             {
+                PlayAttackEffects();
                 _animationManager.DrawAttack(location, damageArea, pet.FacingDirection == 1 || pet.FacingDirection == 3);
             }
             Monitor.Log($"Attack status {damaged}", LogLevel.Trace);
@@ -126,6 +135,111 @@ namespace CombatPets
             {
                 Monitor.Log($"Unknown pet strength: {strength}", LogLevel.Warn);
                 return 1.0f;
+            }
+        }
+
+        private void PlayAttackEffects()
+        {
+            pet.shakeTimer = 250;
+        }
+
+        public void takeDamage(int damage, Monster damager)
+        {
+            Farmer player = Game1.player;
+            if (Game1.eventUp || player.FarmerSprite.isPassingOut() || (player.isInBed.Value && Game1.activeClickableMenu != null && Game1.activeClickableMenu is ReadyCheckDialog))
+            {
+                return;
+            }
+            if (damager == null || damager.isInvincible()) { return; }
+            
+            // pet do inherit buff & rings from player
+            bool monsterDamageCapable = (damager == null || !damager.isInvincible()) && (damager == null || (!(damager is GreenSlime) && !(damager is BigSlime)) || !player.isWearingRing("520"));
+
+            if (!monsterDamageCapable)
+            {
+                return;
+            }
+
+            damage += Game1.random.Next(Math.Min(-1, -damage / 8), Math.Max(1, damage / 8));
+
+            int defense = player.buffs.Defense;
+            if (player.stats.Get("Book_Defense") != 0)
+            {
+                defense++;
+            }
+            if (defense >= damage * 0.5f)
+            {
+                defense -= (int)(defense * Game1.random.Next(3) / 10f);
+            }
+
+            // thron ring effect: damage to monster when player is wearing thron ring
+            if (damager != null && player.isWearingRing("839"))
+            {
+                Rectangle monsterBox = damager.GetBoundingBox();
+                Vector2 trajectory = Utility.getAwayFromPlayerTrajectory(monsterBox, player);
+                trajectory /= 2f;
+                int damageToMonster = damage;
+                int farmerDamage = Math.Max(1, damage - defense);
+                if (farmerDamage < 10)
+                {
+                    damageToMonster = (int)Math.Ceiling((damageToMonster + farmerDamage) / 2.0);
+                }
+                damager.takeDamage(damageToMonster, (int)trajectory.X, (int)trajectory.Y, isBomb: false, 1.0, player);
+                damager.currentLocation.debris.Add(new Debris(damageToMonster, new Vector2(monsterBox.Center.X + 16, monsterBox.Center.Y), new Color(255, 130, 0), 1f, damager));
+            }
+
+            // low health chance to trigger yoba ring effect
+            if (player.isWearingRing("524") && !player.hasBuff("21") && Game1.random.NextDouble() < (0.9 - (double)(PetState.Health / 100f)) / (double)(3 - player.LuckLevel / 10) + ((PetState.Health <= 15) ? 0.2 : 0.0))
+            {
+                pet.playNearbySoundAll("yoba");
+                PetState.SetInvincible(120);
+                return;
+            }
+
+            damage = Math.Max(1, damage - defense);
+
+            // desert festival
+            if (Utility.GetDayOfPassiveFestival("DesertFestival") > 0 && player.currentLocation is MineShaft && Game1.mine.getMineArea() == 121)
+            {
+                float adjustment = 1f;
+                if (player.team.calicoStatueEffects.TryGetValue(8, out var sharpTeethAmount))
+                {
+                    adjustment += (float)sharpTeethAmount * 0.25f;
+                }
+                if (player.team.calicoStatueEffects.TryGetValue(14, out var toothFileAmount))
+                {
+                    adjustment -= (float)toothFileAmount * 0.25f;
+                }
+                damage = Math.Max(1, (int)((float)damage * adjustment));
+            }
+
+            // damaged
+            PetState.Health = Math.Max(0, PetState.Health - damage);
+
+            PetState.SetInvincible(45);
+
+            Point standingPixel = pet.StandingPixel;
+            pet.currentLocation.debris.Add(new Debris(damage, new Vector2(standingPixel.X + 8, standingPixel.Y), Color.Red, 1f, pet));
+            pet.playNearbySoundAll("ow");
+        }
+
+        private void checkDamageFromMonster(GameLocation location)
+        {
+            if (Game1.eventUp)
+            {
+                return;
+            }
+            for (int i = location.characters.Count - 1; i >= 0; i--)
+            {
+                if (i < location.characters.Count && location.characters[i] is Monster monster && Utilities.IsCharacterColliding(monster, pet))
+                {
+                    monster.currentLocation = location;
+                    monster.collisionWithFarmerBehavior();
+                    if (monster.DamageToFarmer > 0)
+                    {
+                        takeDamage(monster.DamageToFarmer, monster);
+                    }
+                }
             }
         }
 

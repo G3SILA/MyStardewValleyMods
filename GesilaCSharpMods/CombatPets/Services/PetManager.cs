@@ -38,7 +38,7 @@ namespace CombatPets
             _petMove.pet = pet;
             Monitor.Log($"Bringing {pet.Name} Today.", LogLevel.Info);
 
-            PetState PetState = new PetState(pet);
+            this.PetState = new PetState(pet);
             _combatService = new CombatService(Monitor, GetConfig, Helper, pet, PetState);
 
         }

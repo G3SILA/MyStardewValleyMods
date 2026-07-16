@@ -29,6 +29,7 @@ namespace CombatPets
         }
         public void SetInvincible(int ticks)
         {
+            if (InvincibleCountDown > ticks) return;
             InvincibleCountDown = ticks;
         }
 
@@ -49,14 +50,13 @@ namespace CombatPets
 
     }
 
-    }
+    
 
     public enum PetStateEnum
     {
         Idle,
         Following,
         Attacking,
-        Defeated,
-        Hurt
+        Defeated
     }
 }

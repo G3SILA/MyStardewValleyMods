@@ -30,10 +30,16 @@ namespace CombatPets
             return -1;
         }
 
-        public static bool IsCharacterFarAway(Character character, Pet pet, int distance)
+        public static bool IsCharacterFarAway(Character character, Character pet, int distance)
         {
             if (pet == null || character == null) return false;
             return TileDistance(character.TilePoint, pet.TilePoint) > distance;
+        }
+
+        public static bool IsCharacterColliding(Character character, Character pet)
+        {
+            if (pet == null || character == null) return false;
+            return character.GetBoundingBox().Intersects(pet.GetBoundingBox());
         }
 
         public static Vector2 GetPositionOfDirection(Vector2 position, int direction)
