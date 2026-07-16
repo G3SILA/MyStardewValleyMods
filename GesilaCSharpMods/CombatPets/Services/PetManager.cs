@@ -13,11 +13,11 @@ namespace CombatPets
         private static Func<ModConfig> GetConfig;
 
         private PetRegister _petRegister;
+
+        public Pet pet;
+        public PetState PetState;
         private PetMove _petMove;
         private CombatService _combatService;
-
-        // for now, just one pet
-        private Pet? _pet;
         
         public PetManager(IMonitor monitor, Func<ModConfig> getConfig, IModHelper helper)
         {
@@ -34,21 +34,25 @@ namespace CombatPets
          * find pet and set it to pet move */
         public void OnDayStarted(object? sender, DayStartedEventArgs e)
         {
-            _pet = _petRegister.getFirstPet();
-            _petMove.pet = _pet;
-            Monitor.Log($"Bringing {_pet.Name} Today.", LogLevel.Info);
-            _combatService = new CombatService(Monitor, GetConfig, Helper, _pet);
+            pet = _petRegister.getFirstPet();
+            _petMove.pet = pet;
+            Monitor.Log($"Bringing {pet.Name} Today.", LogLevel.Info);
+
+            PetState PetState = new PetState(pet);
+            _combatService = new CombatService(Monitor, GetConfig, Helper, pet, PetState);
 
         }
         public void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
         {
-            if (_pet == null) return;
+            if (pet == null) return;
 
             // paused time for singer player & menu on
             if (!Game1.IsMultiplayer && Game1.activeClickableMenu != null)
             {
                 return;
             }
+
+            PetState.OnUpdateTicked(sender, e);
 
             if (GetConfig().EnablePetFollowing)
             {
@@ -69,7 +73,7 @@ namespace CombatPets
 
         public void OnWarped(object? sender, WarpedEventArgs e)
         {
-            if (_pet == null) return;
+            if (pet == null) return;
 
             if (GetConfig().EnablePetFollowing)
             {
