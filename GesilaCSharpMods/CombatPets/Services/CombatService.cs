@@ -150,6 +150,7 @@ namespace CombatPets
             {
                 return;
             }
+            if (PetState.IsInvincible()) { return; }
             if (damager == null || damager.isInvincible()) { return; }
             
             // pet do inherit buff & rings from player
@@ -192,7 +193,7 @@ namespace CombatPets
             if (player.isWearingRing("524") && !player.hasBuff("21") && Game1.random.NextDouble() < (0.9 - (double)(PetState.Health / 100f)) / (double)(3 - player.LuckLevel / 10) + ((PetState.Health <= 15) ? 0.2 : 0.0))
             {
                 pet.playNearbySoundAll("yoba");
-                PetState.SetInvincible(120);
+                PetState.SetInvincible(300);
                 return;
             }
 
@@ -215,12 +216,15 @@ namespace CombatPets
 
             // damaged
             PetState.Health = Math.Max(0, PetState.Health - damage);
-
-            PetState.SetInvincible(45);
+            
+            PetState.SetInvincible(60);
 
             Point standingPixel = pet.StandingPixel;
-            pet.currentLocation.debris.Add(new Debris(damage, new Vector2(standingPixel.X + 8, standingPixel.Y), Color.Red, 1f, pet));
+            pet.currentLocation.debris.Add(new Debris(damage, new Vector2(standingPixel.X + 8, standingPixel.Y), Color.Yellow, 1f, pet));
             pet.playNearbySoundAll("ow");
+
+            Monitor.Log($"Damage: {damage}, Health: {PetState.Health}", LogLevel.Debug);
+
         }
 
         private void checkDamageFromMonster(GameLocation location)
