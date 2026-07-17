@@ -18,7 +18,8 @@ namespace CombatPets
         public PetState PetState;
         private PetMove _petMove;
         private CombatService _combatService;
-        
+        private PetRenderer _petRenderer;
+
         public PetManager(IMonitor monitor, Func<ModConfig> getConfig, IModHelper helper)
         {
             Monitor = monitor;
@@ -40,6 +41,7 @@ namespace CombatPets
 
             this.PetState = new PetState(pet, GetConfig, Monitor);
             PetState.initialize();
+            _petRenderer = new PetRenderer(Monitor, pet, PetState);
             _combatService = new CombatService(Monitor, GetConfig, Helper, pet, PetState);
 
         }
@@ -60,7 +62,8 @@ namespace CombatPets
                 _petMove.OnUpdateTicked(sender, e);
             }
 
-            if (GetConfig().EnableCombat) {
+            if (GetConfig().EnableCombat)
+            {
                 _combatService.OnUpdateTicked(sender, e);
             }
         }
@@ -80,8 +83,14 @@ namespace CombatPets
             {
                 _petMove.OnWarped(sender, e);
             }
-           
+
         }
-        
+
+        public void OnRendered(object? sender, RenderedEventArgs e)
+        {
+            if (pet == null) return;
+            _petRenderer.OnRendered(sender, e);
+
+        }
     }
 }

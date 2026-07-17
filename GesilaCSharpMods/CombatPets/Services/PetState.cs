@@ -20,6 +20,7 @@ namespace CombatPets
 
         public int MaxHealth;
         public int Health;
+        public int InvincibleCountDown { get; private set; } = 0;
         public PetStateEnum State { get; set; } = PetStateEnum.Idle;
 
         public void initialize()
@@ -84,8 +85,6 @@ namespace CombatPets
 
             }
         }
-
-        private int InvincibleCountDown = 0;
 
     }
 
