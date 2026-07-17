@@ -21,6 +21,7 @@ namespace CombatPets
             helper.Events.Player.Warped += this.OnWarped;
             helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
             helper.Events.World.NpcListChanged += this.OnNpcListChanged;
+            helper.Events.Display.Rendered += this.OnRendered;
         }
 
         
@@ -49,6 +50,11 @@ namespace CombatPets
         {
            _petFollowManager.OnNpcListChanged(sender, e);
 
+        }
+
+        private void OnRendered(object? sender, RenderedEventArgs e)
+        {
+            _petFollowManager.OnRendered(sender, e);
         }
     }
 }
