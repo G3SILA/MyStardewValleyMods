@@ -159,7 +159,7 @@ namespace CombatPets
             IsMonster = false;
             Farmer player = Game1.player;
             Point? playerDestination = Utilities.GetTileBehindPlayer(pet, player, player.currentLocation);
-            // already found way
+            // already found way to player
             if (pet.controller != null && _lastDestination == playerDestination)
             {
                 playerDestination = null;
@@ -171,9 +171,10 @@ namespace CombatPets
                 // player very far
                 if (Utilities.IsCharacterFarAway(player, pet, PlayerTooFarDistance))
                 {
-                    DebugLog($"far from player in mine", LogLevel.Debug);
+                    DebugLog($"far from player in mine", LogLevel.Trace);
                     return playerDestination;
                 }
+                // found monster
                 if (HandleAttackDestination(pet.currentLocation) is Point point)
                 {
                     IsMonster = true;
