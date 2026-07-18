@@ -41,7 +41,7 @@ namespace CombatPets
 
             this.PetState = new PetState(pet, GetConfig, Monitor);
             PetState.initialize();
-            _petRenderer = new PetRenderer(Monitor, pet, PetState);
+            _petRenderer = new PetRenderer(Monitor, GetConfig, pet, PetState);
             _combatService = new CombatService(Monitor, GetConfig, Helper, pet, PetState);
 
         }

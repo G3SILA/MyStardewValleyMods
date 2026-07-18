@@ -214,7 +214,7 @@ namespace CombatPets
             // damaged
             PetState.Health = Math.Max(0, PetState.Health - damage);
             
-            PetState.SetInvincible(60);
+            PetState.Attacked();
 
             Point standingPixel = pet.StandingPixel;
             pet.currentLocation.debris.Add(new Debris(damage, new Vector2(standingPixel.X + 8, standingPixel.Y), Color.Yellow, 1f, pet));

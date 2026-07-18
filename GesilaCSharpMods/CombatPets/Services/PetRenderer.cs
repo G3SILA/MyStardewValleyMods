@@ -11,12 +11,14 @@ namespace CombatPets
     internal class PetRenderer
     {
         private static IMonitor Monitor;
+        private Func<ModConfig> GetConfig;
         public Pet pet; 
         private PetState PetState;
 
-        public PetRenderer(IMonitor monitor, Pet pet, PetState state)
+        public PetRenderer(IMonitor monitor, Func<ModConfig> getconfig, Pet pet, PetState state)
         {
             Monitor = monitor;
+            GetConfig = getconfig;
             this.pet = pet;
             this.PetState = state;
         }
@@ -25,12 +27,23 @@ namespace CombatPets
         { 
             if (pet == null) return;
 
-            if (PetState.State == PetStateEnum.Combat || PetState.State == PetStateEnum.Attacking)
+            if (GetConfig().ShowHealthBar == ShowHealthBar.Always)
             {
-                DrawPetHealthBar(e.SpriteBatch,
-                pet.getLocalPosition(Game1.viewport) + new Vector2(0, -pet.GetBoundingBox().Height));
+                if (PetState.State == PetStateEnum.Combat || PetState.State == PetStateEnum.Attacking)
+                {
+                    DrawPetHealthBar(e.SpriteBatch,
+                    pet.getLocalPosition(Game1.viewport) + new Vector2(0, -pet.GetBoundingBox().Height));
+                }
+            } else if (GetConfig().ShowHealthBar == ShowHealthBar.InCombat)
+            {
+                if (PetState.IsAttacked())
+                {
+                    DrawPetHealthBar(e.SpriteBatch,
+                        pet.getLocalPosition(Game1.viewport) + new Vector2(0, -pet.GetBoundingBox().Height));
+                }
             }
             
+
             if (PetState.InvincibleCountDown % 10 > 5)
             {
                 GlowEffect(e.SpriteBatch, Color.Red, 0.5f);
