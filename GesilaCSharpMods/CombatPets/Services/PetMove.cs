@@ -14,6 +14,7 @@ namespace CombatPets
     internal class PetMove
     {
         public Pet pet;
+        public PetState PetState;
         private static IMonitor Monitor;
         private static Func<ModConfig>? GetConfig;
 
@@ -32,8 +33,6 @@ namespace CombatPets
         const int DetactMonsterDistance = 3;
         const int PlayerTooFarDistance = 4;
         //
-
-        private AnimationManager _animationManager = new();
 
         public PetMove(IMonitor monitor, Func<ModConfig>? getConfig)
         {
@@ -68,8 +67,13 @@ namespace CombatPets
                 return;
             }
 
-            
-            if (GetConfig()!.EnableCombat && location is MineShaft)
+            if (PetState.State == PetStateEnum.Attacking)
+            {
+                pet.Halt();
+                return; 
+            }
+
+            if (PetState.State == PetStateEnum.Combat)
             {
                 attackMode = true;
             } else
