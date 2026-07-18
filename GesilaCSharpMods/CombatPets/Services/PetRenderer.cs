@@ -24,6 +24,13 @@ namespace CombatPets
         public void OnRendered(object? sender, RenderedEventArgs e)
         { 
             if (pet == null) return;
+
+            if (PetState.State == PetStateEnum.Combat || PetState.State == PetStateEnum.Attacking)
+            {
+                DrawPetHealthBar(e.SpriteBatch,
+                pet.getLocalPosition(Game1.viewport) + new Vector2(0, -pet.GetBoundingBox().Height));
+            }
+            
             if (PetState.InvincibleCountDown % 10 > 5)
             {
                 GlowEffect(e.SpriteBatch, Color.Red, 0.5f);
@@ -36,6 +43,9 @@ namespace CombatPets
             int barWidth = 50;
             int barHeight = 5;
             float healthPercentage = (float)PetState.Health / PetState.MaxHealth;
+
+            position += new Vector2((pet.Sprite.SpriteWidth * 4 - barWidth) / 2, 0);
+
             // Draw background
             spriteBatch.Draw(Game1.staminaRect, new Rectangle((int)position.X, (int)position.Y - 10, barWidth, barHeight), Color.Gray);
             // Draw health
