@@ -15,6 +15,7 @@ namespace CombatPets
         private Pet pet;
         private static IMonitor Monitor;
         private static Func<ModConfig>? GetConfig;
+        private static IModHelper Helper;
 
         private PetState PetState;
 
@@ -25,6 +26,7 @@ namespace CombatPets
         public CombatService(IMonitor monitor, Func<ModConfig>? getConfig, IModHelper helper, Pet pet, PetState state)
         {
             Monitor = monitor;
+            Helper = helper;
             _animationManager = new AnimationManager(helper);
             GetConfig = getConfig;
             this.pet = pet;
@@ -225,7 +227,7 @@ namespace CombatPets
             if (!PetState.IsAlive())
             {
                 PetState.State = PetStateEnum.Defeated;
-                Game1.showGlobalMessage($"{pet.name} is exhausted today, cannot fight anymore.");
+                Game1.showGlobalMessage(Helper.Translation.Get("combat-service.pet-defeat-announcement", new { petName = pet.name }));
             }
 
         }
