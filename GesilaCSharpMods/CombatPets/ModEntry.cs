@@ -10,13 +10,14 @@ namespace CombatPets
 {
     internal sealed class ModEntry : Mod
     {
-        private ModConfig _config = new();
+        public ModConfig _config = new();
         private PetManager _petFollowManager;
 
         public override void Entry(IModHelper helper)
         {
             _petFollowManager = new PetManager(Monitor, () => _config, this.Helper);
 
+            helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             helper.Events.GameLoop.DayStarted += this.OnDayStarted;
             helper.Events.Player.Warped += this.OnWarped;
             helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
@@ -24,7 +25,13 @@ namespace CombatPets
             helper.Events.Display.Rendered += this.OnRendered;
         }
 
-        
+        // integration with Generic Mod Config Menu
+        private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
+        {
+            GenericModConfigMenu.Initialize(this);
+            GenericModConfigMenu.InitializeMenu();
+        }
+
 
         // initialize mod
         private void OnDayStarted(object? sender, DayStartedEventArgs e)
