@@ -1,5 +1,4 @@
 ﻿
-using System.Security.Cryptography.X509Certificates;
 
 namespace CombatPets
 {
@@ -15,7 +14,7 @@ namespace CombatPets
         public bool LargerCollisionEnabled { get; set; } = false;
 
         // 60 ticks = 1 second, time in ticks; this property is more important with LargerCollisionEnabled
-        public int TimeToWarpWhenNoPathFound { get; set; } = 15;
+        public int TimeToWarpWhenNoPathFound { get; set; } = 30;
 
 
         ////////////////////////////////// Combat //////////////////////////////////////

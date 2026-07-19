@@ -1,3 +1,42 @@
 {
-  "combat-service.pet-defeat-announcement": "{{petName}}已经精疲力尽了，今天不能再战斗了。"
+  "combat-service.pet-defeat-announcement": "{{petName}}今天已经筋疲力尽，无法继续战斗了。",
+
+  "config.following.section": "宠物跟随",
+
+  "config.enable-pet-following.name": "启用宠物跟随",
+  "config.enable-pet-following.tooltip": "允许你的宠物在世界各处跟随你。",
+
+  "config.follow-distance.name": "跟随距离",
+  "config.follow-distance.tooltip": "宠物尝试与你保持的距离，以格为单位。",
+
+  "config.added-follow-speed.name": "额外跟随速度",
+  "config.added-follow-speed.tooltip": "宠物在跟随你时获得的额外移动速度 (建议3)",
+
+  "config.sound-on-jump-pet.name": "播放跳跃音效",
+  "config.sound-on-jump-pet.tooltip": "当宠物跳跃到你的位置时播放音效。",
+
+  "config.pathfinding.section": "寻路",
+
+  "config.larger-collision-enabled.name": "使用更大的碰撞区域",
+  "config.larger-collision-enabled.tooltip": "在计算路径时使用更大的碰撞区域。这可以减少宠物卡住的情况，但也可能增加无法找到有效路径的概率 (宠物更多跳跃)。",
+
+  "config.time-to-warp-no-path.name": "传送前等待时间",
+  "config.time-to-warp-no-path.tooltip": "当无法找到有效路径时，宠物在传送到你身边之前等待的时间，以 tick 为单位（60 tick = 1 秒）。启用“使用更大的碰撞区域”时，此设置会更加重要。",
+
+  "config.combat.section": "战斗",
+
+  "config.enable-combat.name": "启用战斗",
+  "config.enable-combat.tooltip": "（必须先启用宠物跟随）允许你的宠物攻击怪物并参与战斗。",
+
+  "config.pet-strength.name": "宠物战斗强度",
+  "config.pet-strength.tooltip": "选择你的宠物在战斗中的强度。",
+  "config.pet-strength.helpful": "辅助",
+  "config.pet-strength.normal": "普通",
+  "config.pet-strength.overpowered": "强力",
+
+  "config.show-health-bar.name": "显示生命值条",
+  "config.show-health-bar.tooltip": "选择何时显示宠物的生命值条。",
+  "config.show-health-bar.always": "始终显示",
+  "config.show-health-bar.in-combat": "战斗中",
+  "config.show-health-bar.never": "从不显示"
 }
