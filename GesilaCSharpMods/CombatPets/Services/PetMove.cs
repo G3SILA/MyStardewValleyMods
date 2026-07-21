@@ -34,10 +34,12 @@ namespace CombatPets
         const int PlayerTooFarDistance = 4;
         //
 
-        public PetMove(IMonitor monitor, Func<ModConfig>? getConfig)
+        public PetMove(IMonitor monitor, Func<ModConfig>? getConfig, Pet pet, PetState state)
         {
             Monitor = monitor;
             GetConfig = getConfig;
+            this.pet = pet;
+            this.PetState = state;
             PetPathFinding.initialize(GetConfig);
         }
 

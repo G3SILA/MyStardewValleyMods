@@ -24,7 +24,13 @@ namespace CombatPets
             GetConfig = getConfig;
             Helper = helper;
             this.pet = pet;
-            _petMove = new PetMove(monitor, getConfig);
+            this.PetState = new PetState(pet, GetConfig, Monitor);
+            PetState.initialize();
+
+            _petMove = new PetMove(monitor, getConfig, pet, PetState);
+            _petMove.PetState = PetState;
+            _petRenderer = new PetRenderer(Monitor, GetConfig, pet, PetState);
+            _combatService = new CombatService(Monitor, GetConfig, Helper, pet, PetState);
 
         }
 
@@ -34,14 +40,7 @@ namespace CombatPets
         public void OnDayStarted(object? sender, DayStartedEventArgs e)
         {
             if (pet == null) return;
-            _petMove.pet = pet;
             Monitor.Log($"Bringing {pet.Name} Today.", LogLevel.Info);
-
-            this.PetState = new PetState(pet, GetConfig, Monitor);
-            PetState.initialize();
-            _petMove.PetState = PetState;
-            _petRenderer = new PetRenderer(Monitor, GetConfig, pet, PetState);
-            _combatService = new CombatService(Monitor, GetConfig, Helper, pet, PetState);
 
         }
         public void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
