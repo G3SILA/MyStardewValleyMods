@@ -12,20 +12,18 @@ namespace CombatPets
         private static IModHelper Helper;
         private static Func<ModConfig> GetConfig;
 
-        private PetRegister _petRegister;
-
         public Pet pet;
         public PetState PetState;
         private PetMove _petMove;
         private CombatService _combatService;
         private PetRenderer _petRenderer;
 
-        public PetManager(IMonitor monitor, Func<ModConfig> getConfig, IModHelper helper)
+        public PetManager(IMonitor monitor, Func<ModConfig> getConfig, IModHelper helper, Pet pet)
         {
             Monitor = monitor;
             GetConfig = getConfig;
             Helper = helper;
-            _petRegister = new PetRegister(monitor);
+            this.pet = pet;
             _petMove = new PetMove(monitor, getConfig);
 
         }
@@ -35,7 +33,7 @@ namespace CombatPets
          * find pet and set it to pet move */
         public void OnDayStarted(object? sender, DayStartedEventArgs e)
         {
-            pet = _petRegister.getFirstPet();
+            if (pet == null) return;
             _petMove.pet = pet;
             Monitor.Log($"Bringing {pet.Name} Today.", LogLevel.Info);
 
@@ -67,13 +65,6 @@ namespace CombatPets
             {
                 _combatService.OnUpdateTicked(sender, e);
             }
-        }
-
-        public void OnNpcListChanged(object? sender, NpcListChangedEventArgs e)
-        {
-            _petRegister.OnNpcListChanged(sender, e);
-
-            // is my pet still present? 
         }
 
         public void OnWarped(object? sender, WarpedEventArgs e)
