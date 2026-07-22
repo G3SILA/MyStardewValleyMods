@@ -39,8 +39,9 @@ namespace CombatPets
         private void OnDayStarted(object? sender, DayStartedEventArgs e)
         {
             int number = _config.MaxNumberFollowers;
-            // Pet pet = _petRegister.getFirstPet();
-
+    
+            // restart everyday
+            _petManagers.Clear();
             Utility.getAllPets().ForEach(pet =>
             {
                 if (number > 0)
