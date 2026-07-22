@@ -13,7 +13,7 @@ namespace CombatPets
         public ModConfig _config = new();
 
         private PetRegister _petRegister;
-        private PetManager _petFollowManager;
+        private List<PetManager> _petManagers = new();
 
         public override void Entry(IModHelper helper)
         {
@@ -38,17 +38,26 @@ namespace CombatPets
         // initialize mod
         private void OnDayStarted(object? sender, DayStartedEventArgs e)
         {
-            Pet pet = _petRegister.getFirstPet();
-            _petFollowManager = new PetManager(Monitor, () => _config, this.Helper, pet); 
-            _petFollowManager.OnDayStarted(sender, e); 
+            int number = _config.MaxNumberFollowers;
+            // Pet pet = _petRegister.getFirstPet();
 
+            Utility.getAllPets().ForEach(pet =>
+            {
+                if (number > 0)
+                {
+                    var petManager = new PetManager(Monitor, () => _config, this.Helper, pet);
+                    _petManagers.Add(petManager);
+                    --number;
+                }
+            });
+            ApplyToAllPetManagers(manager => manager.OnDayStarted(sender, e));
         }
 
         private void OnWarped(object? sender, WarpedEventArgs e)
         {
-            if (!Context.IsWorldReady || _petFollowManager is null)
+            if (!Context.IsWorldReady || _petManagers is null)
                 return;
-            _petFollowManager.OnWarped(sender, e);
+            ApplyToAllPetManagers(manager => manager.OnWarped(sender, e)); 
 
         }
 
@@ -56,7 +65,7 @@ namespace CombatPets
         {
             if (!Context.IsWorldReady)
                 return;
-            _petFollowManager.OnUpdateTicked(sender, e);
+            ApplyToAllPetManagers(manager => manager.OnUpdateTicked(sender, e));
         }
 
         public void OnNpcListChanged(object? sender, NpcListChangedEventArgs e)
@@ -68,9 +77,17 @@ namespace CombatPets
 
         private void OnRendered(object? sender, RenderedEventArgs e)
         {
-            if (!Context.IsWorldReady || _petFollowManager is null)
+            if (!Context.IsWorldReady || _petManagers is null)
                 return;
-            _petFollowManager.OnRendered(sender, e);
+            ApplyToAllPetManagers(manager => manager.OnRendered(sender, e));
+        }
+
+        private void ApplyToAllPetManagers(Action<PetManager> action)
+        {
+            foreach (var manager in _petManagers)
+            {
+                action(manager);
+            }
         }
     }
 }

@@ -49,6 +49,17 @@ namespace CombatPets
 
             configMenu.AddNumberOption(
                 mod: Entry.ModManifest,
+                getValue: () => Entry._config.MaxNumberFollowers,
+                setValue: value => Entry._config.MaxNumberFollowers = value,
+                name: () => Entry.Helper.Translation.Get("config.max-number-followers.name"),
+                tooltip: () => Entry.Helper.Translation.Get("config.max-number-followers.tooltip"),
+                min: 0,
+                max: 10,
+                interval: 1
+            );
+
+            configMenu.AddNumberOption(
+                mod: Entry.ModManifest,
                 getValue: () => Entry._config.FollowDistance,
                 setValue: value => Entry._config.FollowDistance = value,
                 name: () => Entry.Helper.Translation.Get("config.follow-distance.name"),

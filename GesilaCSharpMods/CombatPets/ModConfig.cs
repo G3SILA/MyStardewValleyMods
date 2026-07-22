@@ -5,7 +5,8 @@ namespace CombatPets
     public sealed class ModConfig
     {
         
-        public bool EnablePetFollowing { get; set; } = true; 
+        public bool EnablePetFollowing { get; set; } = true;
+        public int MaxNumberFollowers { get; set; } = 3;
         public int FollowDistance { get; set; } = 1; // tiles away the pet should follow
         public int AddedFollowSpeed { get; set; } = 3; 
         public bool SoundOnJumpPet { get; set; } = true;

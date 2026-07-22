@@ -1,11 +1,14 @@
 {
   "combat-service.pet-defeat-announcement": "{{petName}} is exhausted today, cannot fight anymore.",
 
-  
+
   "config.following.section": "Pet Following",
 
   "config.enable-pet-following.name": "Enable Pet Following",
   "config.enable-pet-following.tooltip": "Allow your pet to follow you around the world.",
+
+  "config.max-number-followers.name": "Max Number of Pets Following",
+  "config.max-number-followers.tooltip": "effective on next day start after reset.",
 
   "config.follow-distance.name": "Follow Distance",
   "config.follow-distance.tooltip": "The distance, in tiles, that your pet tries to maintain from you.",

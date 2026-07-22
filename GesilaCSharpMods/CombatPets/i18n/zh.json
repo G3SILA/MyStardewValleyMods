@@ -9,6 +9,9 @@
   "config.follow-distance.name": "跟随距离",
   "config.follow-distance.tooltip": "宠物尝试与你保持的距离，以格为单位。",
 
+  "config.max-number-followers.name": "最大宠物跟随数量",
+  "config.max-number-followers.tooltip": "第二天起床生效。",
+
   "config.added-follow-speed.name": "额外跟随速度",
   "config.added-follow-speed.tooltip": "宠物在跟随你时获得的额外移动速度 (建议3)",
 
