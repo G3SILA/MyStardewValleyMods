@@ -30,8 +30,6 @@ namespace CombatPets
 
         // attack mode set
         private bool attackMode = false;
-        const int DetactMonsterDistance = 3;
-        const int PlayerTooFarDistance = 4;
         //
 
         public PetMove(IMonitor monitor, Func<ModConfig>? getConfig, Pet pet, PetState state)
@@ -171,6 +169,7 @@ namespace CombatPets
             if (attackMode)
             {
                 // player very far
+                int PlayerTooFarDistance = GetConfig!().FollowDistance + 5;
                 if (Utilities.IsCharacterFarAway(player, pet, PlayerTooFarDistance))
                 {
                     DebugLog($"far from player in mine", LogLevel.Trace);
@@ -277,6 +276,7 @@ namespace CombatPets
             {
                 if (characters[num] is Monster { IsMonster: not false, Health: > 0 } monster)
                 {
+                    int DetactMonsterDistance = GetConfig!().FollowDistance + 4;
                     if (Utilities.IsCharacterFarAway(monster, pet, DetactMonsterDistance))
                     {
                         continue;
