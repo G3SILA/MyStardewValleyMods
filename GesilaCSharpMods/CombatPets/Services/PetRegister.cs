@@ -1,8 +1,9 @@
-﻿using StardewValley;
-using StardewModdingAPI;
-using StardewValley.Characters;
-using static StardewValley.Utility;
+﻿using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewValley;
+using StardewValley.Buildings;
+using StardewValley.Characters;
+using StardewValley.Locations;
 
 /*
     Find all pets in the world and store them in a list
@@ -20,19 +21,26 @@ namespace CombatPets
         {
             Monitor = monitor;
         }
-
-        public void OnNpcListChanged(object? sender, NpcListChangedEventArgs e)
+        public Pet? IsPetRemoved(object? sender, NpcListChangedEventArgs e)
         {
-            UpdatePetList();
-        }
-        private void UpdatePetList()
-        {
-            if(!Context.IsWorldReady)
+            if (!e.IsCurrentLocation)
             {
-                return;
+                return null;
             }
-            Pets = getAllPets();
-            this.Monitor.Log($"Found {Pets.Count} pets.", LogLevel.Debug);
+
+            // a pet is removed from current location and not added to another -> removed from the world
+            foreach (NPC npc in e.Removed)
+            {
+                if (npc is Pet pet)
+                {
+                    List<Pet> currPets = getAllPetsInAllLocations();
+                    if (!currPets.Contains(pet))
+                    {
+                        return pet;
+                    }
+                }
+            }
+            return null;
         }
 
         public bool HasPets()
@@ -40,17 +48,27 @@ namespace CombatPets
             return Pets.Count > 0;
         }
 
-        // only one for now, can be modify in the future: 
-        // highest friendship, multiple pets, etc.
-        public Pet getFirstPet()
+        public List<Pet> getAllPetsInAllLocations()
         {
-            UpdatePetList();
-            if (!HasPets()) 
+            List<Pet> allPets = new();
+            foreach (GameLocation location in Game1.locations)
             {
-                return null;
+                foreach (NPC npc in location.characters)
+                {
+                    if (npc is Pet pet)
+                    {
+                        allPets.Add(pet);
+                    }
+                }
             }
-            return Pets[0];
+            return allPets;
         }
-
+        public void ApplyToAllPets(Action<Pet> action)
+        {
+            foreach (var pet in Pets)
+            {
+                action(pet);
+            }
+        }
     }
 }

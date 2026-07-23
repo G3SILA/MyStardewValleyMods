@@ -71,9 +71,16 @@ namespace CombatPets
 
         public void OnNpcListChanged(object? sender, NpcListChangedEventArgs e)
         {
-            _petRegister.OnNpcListChanged(sender, e);
+            Pet? removed = _petRegister.IsPetRemoved(sender, e);
+            if (removed != null)
+            {
+                PetManager? manager = _petManagers.FirstOrDefault(manager => manager.pet.name == removed.name);
 
-            // is my pet still present? 
+                if (manager != null)
+                {
+                    _petManagers.Remove(manager);
+                }
+            }
         }
 
         private void OnRendered(object? sender, RenderedEventArgs e)
