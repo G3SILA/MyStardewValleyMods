@@ -41,12 +41,6 @@ namespace CombatPets
             PetPathFinding.initialize(GetConfig);
         }
 
-        [System.Diagnostics.Conditional("DEBUG")]
-        private void DebugLog(string message, LogLevel level)
-        {
-            Monitor.Log(message, level);
-        }
-
         public void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
         {
             if (pet == null) return;
@@ -98,8 +92,6 @@ namespace CombatPets
                 _lastTile = pet.TilePoint;
             }
             _playerLastPosition = player.Position;
-
-            DebugLog($"Pet stuck counter {stuckCounter}", LogLevel.Trace);
             
             // need to follow more closely in mine
             if (attackMode && stuckCounter > 30)
@@ -121,7 +113,7 @@ namespace CombatPets
             bool isPathFound = false;
             if (isMonster)
             {
-                DebugLog("Going for Monster", LogLevel.Debug);
+                Monitor.VerboseLog($"{pet.name} Going for Monster");
                 isPathFound = findPathForPet(pet, destination.Value,
                     Utilities.GetDirectionFromTileToTile(pet.TilePoint, destination.Value));
             } else
@@ -172,7 +164,7 @@ namespace CombatPets
                 int PlayerTooFarDistance = GetConfig!().FollowDistance + 5;
                 if (Utilities.IsCharacterFarAway(player, pet, PlayerTooFarDistance))
                 {
-                    DebugLog($"far from player in mine", LogLevel.Trace);
+                    Monitor.VerboseLog($"far from player in mine");
                     return playerDestination;
                 }
                 // found monster
@@ -204,7 +196,7 @@ namespace CombatPets
 
             if (path == null)
             {
-                DebugLog("No path found for pet " + pet.Name + " to destination " + destination, LogLevel.Trace);
+                Monitor.VerboseLog("No path found for pet " + pet.Name + " to destination " + destination);
                 return false;
             }
 
@@ -218,7 +210,7 @@ namespace CombatPets
 
             pet.addedSpeed = GetConfig!().AddedFollowSpeed;  // faster to catch up player
 
-            DebugLog($"Found path for {pet.Name}. Destination: {destination}", LogLevel.Trace);
+            Monitor.VerboseLog($"Found path for {pet.Name}. Destination: {destination}");
 
 
             return true;
@@ -282,8 +274,7 @@ namespace CombatPets
                         continue;
                     }
                     // monster is close
-                    DebugLog($"found monster! " +
-                            $"Distance: {Utilities.TileDistance(monster.TilePoint, pet.TilePoint)}", LogLevel.Debug);
+                    Monitor.VerboseLog($"{pet.name} found monster! " + $"Distance: {Utilities.TileDistance(monster.TilePoint, pet.TilePoint)}");
                     return monster.TilePoint;
                 }
             }
@@ -293,7 +284,7 @@ namespace CombatPets
         private void OnStuck()
         {
             Farmer player = Game1.player;
-            DebugLog($"Pet {pet.Name} seems stuck, warping to player.", LogLevel.Warn);
+            Monitor.VerboseLog($"Pet {pet.Name} seems stuck, warping to player.");
             this.WarpPet(pet, player.currentLocation);
             stuckCounter = 0;
         }
