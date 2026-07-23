@@ -80,13 +80,7 @@ namespace CombatPets
 
                         // modified part
                         Rectangle collisionBox;
-                        if (GetConfig!().LargerCollisionEnabled)
-                        {
-                            collisionBox = new Rectangle(pathNode2.x * 64 - 16, pathNode2.y * 64 - 16, 100, 62);
-                        } else
-                        {
-                            collisionBox = new Rectangle(pathNode2.x * 64, pathNode2.y * 64, 100, 62);
-                        }
+                        collisionBox = new Rectangle(pathNode2.x * 64, pathNode2.y * 64, 100, 62);
                         
                         if (!flag && location.isCollidingPosition(collisionBox, Game1.viewport, character is Farmer, 0, glider: false, character, pathfinding: true))
                         {

@@ -11,10 +11,7 @@ namespace CombatPets
         public int AddedFollowSpeed { get; set; } = 3; 
         public bool SoundOnJumpPet { get; set; } = true;
 
-        // larger collision would get a better path find, reduce stuck but increase no path found.
-        public bool LargerCollisionEnabled { get; set; } = false;
-
-        // 60 ticks = 1 second, time in ticks; this property is more important with LargerCollisionEnabled
+        // 60 ticks = 1 second, time in ticks
         public int TimeToWarpWhenNoPathFound { get; set; } = 30;
 
 

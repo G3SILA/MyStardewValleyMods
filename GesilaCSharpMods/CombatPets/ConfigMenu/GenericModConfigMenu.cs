@@ -97,14 +97,6 @@ namespace CombatPets
                 text: () => Entry.Helper.Translation.Get("config.pathfinding.section")
             );
 
-            configMenu.AddBoolOption(
-                mod: Entry.ModManifest,
-                getValue: () => Entry._config.LargerCollisionEnabled,
-                setValue: value => Entry._config.LargerCollisionEnabled = value,
-                name: () => Entry.Helper.Translation.Get("config.larger-collision-enabled.name"),
-                tooltip: () => Entry.Helper.Translation.Get("config.larger-collision-enabled.tooltip")
-            );
-
             configMenu.AddNumberOption(
                 mod: Entry.ModManifest,
                 getValue: () => Entry._config.TimeToWarpWhenNoPathFound,

@@ -21,11 +21,8 @@
 
   "config.pathfinding.section": "Pathfinding",
 
-  "config.larger-collision-enabled.name": "Use Larger Collision Area",
-  "config.larger-collision-enabled.tooltip": "Use a larger collision area when calculating paths. This can reduce the chance of your pet getting stuck, but may also increase the chance that no valid path is found (pet jumps more).",
-
   "config.time-to-warp-no-path.name": "Time Before Warping",
-  "config.time-to-warp-no-path.tooltip": "The time, in ticks (60 ticks = 1 second), your pet waits when no valid path can be found before warping to you. This setting is more important when Larger Collision Area is enabled.",
+  "config.time-to-warp-no-path.tooltip": "The time, in ticks (60 ticks = 1 second), your pet waits when no valid path can be found before warping to you.",
 
   "config.combat.section": "Combat",
 

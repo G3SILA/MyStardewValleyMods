@@ -190,7 +190,7 @@ namespace CombatPets
         private bool findPathForPet(Pet pet, Point destination, int direction)
         {
             TakeControlOfPet(pet);
-
+            
             Stack<Point> path = PetPathFinding.findPath(pet.TilePoint, destination, IsAdjacentToEnd,
                 pet.currentLocation, pet, 500);
 
@@ -200,13 +200,7 @@ namespace CombatPets
                 return false;
             }
 
-            PathFindController pathFindController = new PathFindController(path, pet, pet.currentLocation)
-            {
-                finalFacingDirection = direction,
-                NPCSchedule = false
-            };
-
-            pet.controller = pathFindController;
+            pet.controller = new PetPathFindController(Monitor, pet, pet.currentLocation, destination, direction, path);
 
             pet.addedSpeed = GetConfig!().AddedFollowSpeed;  // faster to catch up player
 

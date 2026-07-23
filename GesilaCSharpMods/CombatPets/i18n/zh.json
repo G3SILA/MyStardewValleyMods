@@ -20,11 +20,8 @@
 
   "config.pathfinding.section": "寻路",
 
-  "config.larger-collision-enabled.name": "使用更大的碰撞区域",
-  "config.larger-collision-enabled.tooltip": "在计算路径时使用更大的碰撞区域。这可以减少宠物卡住的情况，但也可能增加无法找到有效路径的概率 (宠物更多跳跃)。",
-
   "config.time-to-warp-no-path.name": "传送前等待时间",
-  "config.time-to-warp-no-path.tooltip": "当无法找到有效路径时，宠物在传送到你身边之前等待的时间，以 tick 为单位（60 tick = 1 秒）。启用“使用更大的碰撞区域”时，此设置会更加重要。",
+  "config.time-to-warp-no-path.tooltip": "当无法找到有效路径时，宠物在传送到你身边之前等待的时间，以 tick 为单位（60 tick = 1 秒）。",
 
   "config.combat.section": "战斗",
 
