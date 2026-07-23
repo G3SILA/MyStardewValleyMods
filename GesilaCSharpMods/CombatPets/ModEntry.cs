@@ -10,13 +10,14 @@ namespace CombatPets
 {
     internal sealed class ModEntry : Mod
     {
-        public ModConfig _config = new();
+        public ModConfig _config;
 
         private PetRegister _petRegister;
         private List<PetManager> _petManagers = new();
 
         public override void Entry(IModHelper helper)
         {
+            this._config = this.Helper.ReadConfig<ModConfig>();
             _petRegister = new PetRegister(Monitor);
 
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
