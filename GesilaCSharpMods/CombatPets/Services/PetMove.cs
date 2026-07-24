@@ -150,7 +150,7 @@ namespace CombatPets
         {
             IsMonster = false;
             Farmer player = Game1.player;
-            Point? playerDestination = Utilities.GetTileBehindPlayer(pet, player, player.currentLocation);
+            Point? playerDestination = Utilities.GetClosestValidTile(pet, player.TilePoint, player.currentLocation);
             // already found way to player
             if (pet.controller != null && _lastDestination == playerDestination)
             {
@@ -235,7 +235,9 @@ namespace CombatPets
             {
                 pet.jumpWithoutSound();
             }
-            Game1.warpCharacter(pet, newLocation.NameOrUniqueName, Utilities.GetTileBehindPlayer(pet, Game1.player, newLocation));
+
+            Point p = Utilities.GetClosestValidTile(pet,Game1.player.TilePoint, newLocation);
+            Game1.warpCharacter(pet, newLocation.NameOrUniqueName, p);
 
             Monitor.Log($"Warped pet {pet.Name} to {newLocation.NameOrUniqueName}.", LogLevel.Trace);
         }

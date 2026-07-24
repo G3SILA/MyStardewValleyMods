@@ -83,6 +83,63 @@ namespace CombatPets
             return location.CanSpawnCharacterHere(tileVector);
         }
 
+        public static List<Point> GetNeighbourTiles(Point tile)
+        {
+            return new List<Point>
+            {
+                new Point(tile.X + 1, tile.Y),
+                new Point(tile.X - 1, tile.Y),
+                new Point(tile.X, tile.Y + 1),
+                new Point(tile.X, tile.Y - 1),
+                new Point(tile.X + 1, tile.Y + 1),
+                new Point(tile.X + 1, tile.Y - 1),
+                new Point(tile.X - 1, tile.Y + 1),
+                new Point(tile.X - 1, tile.Y - 1)
+            };
+        }
+
+        public static Point GetClosestValidTile(Pet pet, Point start, GameLocation location)
+        {
+            Queue<Point> queue = new();
+            HashSet<Point> seen = new();
+
+            int width = location.Map.Layers[0].LayerWidth;
+            int height = location.Map.Layers[0].LayerHeight;
+
+            queue.Enqueue(start);
+            seen.Add(start);
+
+            while (queue.Count > 0)
+            {
+                Point current = queue.Dequeue();
+
+                if (CanPlacePetTile(pet, current, location))
+                    return current;
+
+                foreach (Point neighbor in GetNeighbourTiles(current))
+                {
+                    // outside
+                    if (neighbor.X < 0 ||
+                        neighbor.Y < 0 ||
+                        neighbor.X >= width ||
+                        neighbor.Y >= height)
+                    {
+                        continue;
+                    }
+
+                    // skip if seen
+                    if (!seen.Add(neighbor)) continue;
+
+                    queue.Enqueue(neighbor);
+                }
+            }
+
+            return start;
+        }
+
+        //////////////////////////////////////////////////////////////////////////////////////
+        ///obsolete, use GetClosestValidTile instead
+        ///
         /// <summary>
         /// get the tile behind player based on facing direction, if not valid,     return one of the valid adjavent tile, return player's tile if none is  valid
         /// </summary>
