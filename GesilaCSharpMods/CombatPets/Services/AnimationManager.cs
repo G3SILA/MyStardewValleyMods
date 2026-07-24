@@ -11,7 +11,7 @@ namespace CombatPets
     {
         private static IModHelper helper;
         private Texture2D _attackTexture = null!;
-        private readonly Dictionary<Point, Texture2D> _debugRectTextures = new();
+        private static readonly Dictionary<Point, Texture2D> _debugRectTextures = new();
         public AnimationManager(IModHelper Ihelper)
         {
             helper = Ihelper;
@@ -44,11 +44,11 @@ namespace CombatPets
         }
 
         // show the area once
-        public void DebugArea(GameLocation location, Rectangle area)
+        public static void DebugArea(GameLocation location, Rectangle area)
         {
             DebugArea(location, area, Color.Red, 0.35f, 250f);
         }
-        public void DebugArea(GameLocation location, Rectangle area, Color color, float alphaV, float animInterval)
+        public static void DebugArea(GameLocation location, Rectangle area, Color color, float alphaV, float animInterval)
         {
             Texture2D texture = GetDebugRectTexture(area.Width, area.Height);
 
@@ -77,7 +77,7 @@ namespace CombatPets
         }
 
         // get a white translucent texture
-        private Texture2D GetDebugRectTexture(int width, int height)
+        private static Texture2D GetDebugRectTexture(int width, int height)
         {
             Point size = new Point(width, height);
 

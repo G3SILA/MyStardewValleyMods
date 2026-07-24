@@ -58,8 +58,7 @@ namespace CombatPets
                 PetState.State = PetStateEnum.Combat;
             }
 
-            Monitor.Log($"Health: {PetState.Health}", LogLevel.Debug);
-            Monitor.Log($"State: {PetState.State}", LogLevel.Debug);
+            Monitor.VerboseLog($"Pet: {pet.name}, State: {PetState.State}, Health: {PetState.Health}");
 
             checkDamageFromMonster(location);
 
@@ -222,7 +221,7 @@ namespace CombatPets
             pet.currentLocation.debris.Add(new Debris(damage, new Vector2(standingPixel.X + 8, standingPixel.Y), Color.Yellow, 1f, pet));
             pet.playNearbySoundAll("ow");
 
-            Monitor.Log($"Damage: {damage}, Health: {PetState.Health}", LogLevel.Debug);
+            Monitor.VerboseLog($"Damage: {damage}, Health: {PetState.Health}");
 
             if (!PetState.IsAlive())
             {
