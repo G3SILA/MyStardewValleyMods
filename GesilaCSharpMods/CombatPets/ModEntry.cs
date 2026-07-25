@@ -10,15 +10,18 @@ namespace CombatPets
 {
     internal sealed class ModEntry : Mod
     {
+        private int following = 0; 
         public ModConfig _config;
 
         private PetRegister _petRegister;
+
+        // current following managers
         private List<PetManager> _petManagers = new();
 
         public override void Entry(IModHelper helper)
         {
             this._config = this.Helper.ReadConfig<ModConfig>();
-            _petRegister = new PetRegister(Monitor);
+            _petRegister = new PetRegister(Monitor, helper, () => _config);
 
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             helper.Events.GameLoop.DayStarted += this.OnDayStarted;
@@ -26,6 +29,7 @@ namespace CombatPets
             helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
             helper.Events.World.NpcListChanged += this.OnNpcListChanged;
             helper.Events.Display.Rendered += this.OnRendered;
+            helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         }
 
         // integration with Generic Mod Config Menu
@@ -39,25 +43,21 @@ namespace CombatPets
         // initialize mod
         private void OnDayStarted(object? sender, DayStartedEventArgs e)
         {
-            int number = _config.MaxNumberFollowers;
-    
+            _petRegister.OnDayStarted(sender, e);
+
             // restart everyday
+            following = 0;
             _petManagers.Clear();
             Utility.getAllPets().ForEach(pet =>
             {
-                if (number > 0)
-                {
-                    var petManager = new PetManager(Monitor, () => _config, this.Helper, pet);
-                    _petManagers.Add(petManager);
-                    --number;
-                }
+                addToFollow(pet, false);
             });
             ApplyToAllPetManagers(manager => manager.OnDayStarted(sender, e));
         }
 
         private void OnWarped(object? sender, WarpedEventArgs e)
         {
-            if (!Context.IsWorldReady || _petManagers is null)
+            if (!Context.IsWorldReady)
                 return;
             ApplyToAllPetManagers(manager => manager.OnWarped(sender, e)); 
 
@@ -70,12 +70,12 @@ namespace CombatPets
             ApplyToAllPetManagers(manager => manager.OnUpdateTicked(sender, e));
         }
 
-        public void OnNpcListChanged(object? sender, NpcListChangedEventArgs e)
+        private void OnNpcListChanged(object? sender, NpcListChangedEventArgs e)
         {
             Pet? removed = _petRegister.IsPetRemoved(sender, e);
             if (removed != null)
             {
-                PetManager? manager = _petManagers.FirstOrDefault(manager => manager.pet.name == removed.name);
+                PetManager? manager = _petManagers.FirstOrDefault(manager => manager.pet == removed);
 
                 if (manager != null)
                 {
@@ -97,6 +97,55 @@ namespace CombatPets
             {
                 action(manager);
             }
+        }
+
+        private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+        {
+            if (!Context.IsWorldReady)
+                return;
+
+            _petRegister.ApplyToAllPets(pet =>
+            {
+                if (e.Button == SButton.MouseRight && e.Cursor.GrabTile.Equals(pet.Tile))
+                {
+                    if (_petManagers.Contains(_petRegister.getManager(pet)))
+                    {
+                        removeFromFollow(pet);
+                    } else
+                    {
+                        addToFollow(pet);
+                    }
+                }
+            });
+        }
+
+        private void addToFollow(Pet pet, bool showFeedback = true)
+        {
+            int max = _config.MaxNumberFollowers;
+            if (following < max)
+            {
+                _petManagers.Add(_petRegister.getManager(pet));
+                ++following;
+                if (showFeedback)
+                {
+                    Game1.showGlobalMessage(Helper.Translation.Get("follow.started", new { petName = pet.name }));
+                    pet.playContentSound();
+                    pet.doEmote(56);
+                }
+            } else
+            {
+                if (showFeedback)
+                {
+                    Game1.showRedMessage(Helper.Translation.Get("follow.capacity-reached"));
+                }
+            }
+        }
+
+        private void removeFromFollow(Pet pet)
+        {
+            _petManagers.Remove(_petRegister.getManager(pet));
+            Game1.showGlobalMessage(Helper.Translation.Get("follow.stopped",new { petName = pet.name }));
+            --following;
         }
     }
 }

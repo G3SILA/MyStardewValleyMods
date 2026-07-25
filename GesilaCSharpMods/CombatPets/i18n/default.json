@@ -1,4 +1,8 @@
 {
+  "follow.started": "{{petName}} is with you.",
+  "follow.capacity-reached": "Maximum following capacity reached (can be modified in configuration).",
+  "follow.stopped": "{{petName}} stops following.",
+
   "combat-service.pet-defeat-announcement": "{{petName}} is exhausted today, cannot fight anymore.",
 
 

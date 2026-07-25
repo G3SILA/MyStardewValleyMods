@@ -16,10 +16,33 @@ namespace CombatPets
     internal sealed class PetRegister
     {
         private readonly IMonitor Monitor;
+        private readonly IModHelper Helper;
+        private Func<ModConfig> GetConfig;
+
+        // all pets & corresponding managers
         public List<Pet> Pets = new();
-        public PetRegister(IMonitor monitor)
+        public List<PetManager> Managers = new();
+        public PetRegister(IMonitor monitor, IModHelper helper, Func<ModConfig> getConfig)
         {
             Monitor = monitor;
+            Helper = helper;
+            GetConfig = getConfig;
+        }
+
+        public void OnDayStarted(object? sender, DayStartedEventArgs e)
+        {
+            Pets = getAllPetsInAllLocations();
+            foreach (Pet pet in Pets)
+            {
+                var petManager = new PetManager(Monitor, GetConfig, this.Helper, pet);
+                Managers.Add(petManager);
+            }
+        }
+
+        public PetManager getManager(Pet pet)
+        {
+            return Managers.FirstOrDefault((manager) => pet == manager.pet) ?? 
+                throw new InvalidOperationException($"Expected a PetManager for '{pet.name}', but none was found.");
         }
         public Pet? IsPetRemoved(object? sender, NpcListChangedEventArgs e)
         {
