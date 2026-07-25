@@ -1,15 +1,18 @@
 {
-  
+
   "follow.started": "{{petName}}陪你。",
   "follow.capacity-reached": "已达到最大跟随数量（可在设置更改）。",
   "follow.stopped": "{{petName}}停止了跟随。",
-  
+
   "combat-service.pet-defeat-announcement": "{{petName}}今天已经筋疲力尽，无法继续战斗了。",
 
   "config.following.section": "宠物跟随",
 
   "config.enable-pet-following.name": "启用宠物跟随",
   "config.enable-pet-following.tooltip": "允许你的宠物在世界各处跟随你。",
+
+  "config.toggle-pet-following-keybind.name": "选择跟随宠物按键",
+  "config.toggle-pet-following-keybind.tooltip": "在宠物附近按下此按键，让宠物开始或停止跟随。",
 
   "config.follow-distance.name": "跟随距离",
   "config.follow-distance.tooltip": "宠物尝试与你保持的距离，以格为单位。",

@@ -47,6 +47,14 @@ namespace CombatPets
                 tooltip: () => Entry.Helper.Translation.Get("config.enable-pet-following.tooltip")
             );
 
+            configMenu.AddKeybind(
+                mod: Entry.ModManifest,
+                getValue: () => Entry._config.TogglePetFollowingKeybind,
+                setValue: value => Entry._config.TogglePetFollowingKeybind = value,
+                name: () => Entry.Helper.Translation.Get("config.toggle-pet-following-keybind.name"),
+                tooltip: () => Entry.Helper.Translation.Get("config.toggle-pet-following-keybind.tooltip")
+            );
+
             configMenu.AddNumberOption(
                 mod: Entry.ModManifest,
                 getValue: () => Entry._config.MaxNumberFollowers,

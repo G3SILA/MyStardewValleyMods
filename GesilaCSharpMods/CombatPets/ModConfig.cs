@@ -1,13 +1,17 @@
 ﻿
 
+using StardewModdingAPI;
+
 namespace CombatPets
 {
     public sealed class ModConfig
     {
         
         public bool EnablePetFollowing { get; set; } = true;
+
+        public SButton TogglePetFollowingKeybind { get; set; } = SButton.MouseRight;
         public int MaxNumberFollowers { get; set; } = 3;
-        public int FollowDistance { get; set; } = 1; // tiles away the pet should follow
+        public int FollowDistance { get; set; } = 3; // tiles away the pet should follow
         public int AddedFollowSpeed { get; set; } = 3; 
         public bool SoundOnJumpPet { get; set; } = true;
 

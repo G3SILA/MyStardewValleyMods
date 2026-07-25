@@ -106,7 +106,7 @@ namespace CombatPets
 
             _petRegister.ApplyToAllPets(pet =>
             {
-                if (e.Button == SButton.MouseRight && e.Cursor.GrabTile.Equals(pet.Tile))
+                if (e.Button == _config.TogglePetFollowingKeybind && e.Cursor.GrabTile.Equals(pet.Tile))
                 {
                     if (_petManagers.Contains(_petRegister.getManager(pet)))
                     {

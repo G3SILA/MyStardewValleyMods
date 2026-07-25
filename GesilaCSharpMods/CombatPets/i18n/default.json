@@ -11,6 +11,9 @@
   "config.enable-pet-following.name": "Enable Pet Following",
   "config.enable-pet-following.tooltip": "Allow your pet to follow you around the world.",
 
+  "config.toggle-pet-following-keybind.name": "Toggle Pet Follow State",
+  "config.toggle-pet-following-keybind.tooltip": "Press this key near a pet to make it start or stop following you.",
+
   "config.max-number-followers.name": "Max Number of Pets Following",
   "config.max-number-followers.tooltip": "effective on next day start after reset.",
 
