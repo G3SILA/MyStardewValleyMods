@@ -61,6 +61,11 @@ namespace CombatPets
                 return;
             }
 
+            if (location is not MineShaft && PetState.State != PetStateEnum.Defeated)
+            {
+                PetState.State = PetStateEnum.Following;
+            }
+
             if (PetState.State == PetStateEnum.Attacking)
             {
                 pet.Halt();
