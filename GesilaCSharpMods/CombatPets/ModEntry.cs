@@ -106,7 +106,9 @@ namespace CombatPets
 
             _petRegister.ApplyToAllPets(pet =>
             {
-                if (e.Button == _config.TogglePetFollowingKeybind && e.Cursor.GrabTile.Equals(pet.Tile))
+                Vector2 tileLocation = e.Cursor.GrabTile;
+                Rectangle tileRect = new Rectangle((int)tileLocation.X * 64, (int)tileLocation.Y * 64, 64, 64);
+                if (e.Button == _config.TogglePetFollowingKeybind && pet.GetBoundingBox().Intersects(tileRect))
                 {
                     if (_petManagers.Contains(_petRegister.getManager(pet)))
                     {
