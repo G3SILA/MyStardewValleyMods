@@ -27,11 +27,34 @@ namespace CombatPets
             );
 
             FollowingMenu();
-            PathFindingMenu();
             CombatMenu();
-
+            GeneralMenu();
+            PathFindingMenu();
         }
 
+        private static void GeneralMenu()
+        {
+            configMenu.AddSectionTitle(
+                mod: Entry.ModManifest,
+                text: () => Entry.Helper.Translation.Get("config.general.section")
+            );
+
+            configMenu.AddBoolOption(
+                mod: Entry.ModManifest,
+                getValue: () => Entry._config.WarpAllPetsBackToFarmHouseOnDayStarted,
+                setValue: value => Entry._config.WarpAllPetsBackToFarmHouseOnDayStarted = value,
+                name: () => Entry.Helper.Translation.Get("config.warp-all-pets-back-to-farmhouse-on-day-started.name"),
+                tooltip: () => Entry.Helper.Translation.Get("config.warp-all-pets-back-to-farmhouse-on-day-started.tooltip")
+            );
+
+            configMenu.AddBoolOption(
+                mod: Entry.ModManifest,
+                getValue: () => Entry._config.SoundOnJumpPet,
+                setValue: value => Entry._config.SoundOnJumpPet = value,
+                name: () => Entry.Helper.Translation.Get("config.sound-on-jump-pet.name"),
+                tooltip: () => Entry.Helper.Translation.Get("config.sound-on-jump-pet.tooltip")
+            );
+        }
         private static void FollowingMenu()
         {
             configMenu.AddSectionTitle(
@@ -66,6 +89,14 @@ namespace CombatPets
                 interval: 1
             );
 
+            configMenu.AddBoolOption(
+                mod: Entry.ModManifest,
+                getValue: () => Entry._config.FillUpTeamOnDayStarted,
+                setValue: value => Entry._config.FillUpTeamOnDayStarted = value,
+                name: () => Entry.Helper.Translation.Get("config.fill-up-team-on-day-started.name"),
+                tooltip: () => Entry.Helper.Translation.Get("config.fill-up-team-on-day-started.tooltip")
+            );
+
             configMenu.AddNumberOption(
                 mod: Entry.ModManifest,
                 getValue: () => Entry._config.FollowDistance,
@@ -87,15 +118,6 @@ namespace CombatPets
                 max: 10,
                 interval: 1
             );
-
-            configMenu.AddBoolOption(
-                mod: Entry.ModManifest,
-                getValue: () => Entry._config.SoundOnJumpPet,
-                setValue: value => Entry._config.SoundOnJumpPet = value,
-                name: () => Entry.Helper.Translation.Get("config.sound-on-jump-pet.name"),
-                tooltip: () => Entry.Helper.Translation.Get("config.sound-on-jump-pet.tooltip")
-            );
-
         }
 
         private static void PathFindingMenu()

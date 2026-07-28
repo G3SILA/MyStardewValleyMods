@@ -48,10 +48,23 @@ namespace CombatPets
             // restart everyday
             following = 0;
             _petManagers.Clear();
-            Utility.getAllPets().ForEach(pet =>
+
+            if (_config.FillUpTeamOnDayStarted)
             {
-                addToFollow(pet, false);
-            });
+                _petRegister.getAllPetsInAllLocations().ForEach(pet =>
+                {
+                    addToFollow(pet, false);
+                });
+            }
+
+            if (_config.WarpAllPetsBackToFarmHouseOnDayStarted)
+            {
+                _petRegister.ApplyToAllPets(pet =>
+                {
+                    Game1.warpCharacter(pet, "FarmHouse", Game1.player.TilePoint);
+                });
+            }
+
             ApplyToAllPetManagers(manager => manager.OnDayStarted(sender, e));
         }
 

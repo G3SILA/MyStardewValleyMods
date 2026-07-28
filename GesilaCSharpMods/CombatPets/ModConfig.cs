@@ -11,10 +11,17 @@ namespace CombatPets
 
         public SButton TogglePetFollowingKeybind { get; set; } = SButton.MouseRight;
         public int MaxNumberFollowers { get; set; } = 3;
+        public bool FillUpTeamOnDayStarted { get; set; } = true;
         public int FollowDistance { get; set; } = 3; // tiles away the pet should follow
-        public int AddedFollowSpeed { get; set; } = 3; 
+        public int AddedFollowSpeed { get; set; } = 3;
+
+
+        ////////////////////////////// Tool //////////////////////////////////////////
+        public bool WarpAllPetsBackToFarmHouseOnDayStarted { get; set; } = false;
         public bool SoundOnJumpPet { get; set; } = true;
 
+
+        ////////////////////////////// PathFinding /////////////////////////////////////
         // 60 ticks = 1 second, time in ticks
         public int TimeToWarpWhenNoPathFound { get; set; } = 30;
 

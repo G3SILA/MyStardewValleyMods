@@ -46,6 +46,16 @@
   "config.show-health-bar.tooltip": "Choose when your pet's health bar is displayed.",
   "config.show-health-bar.always": "Always",
   "config.show-health-bar.in-combat": "In Combat",
-  "config.show-health-bar.never": "Never"
+  "config.show-health-bar.never": "Never",
+
+  
+  "config.general.section": "General",
+
+  "config.warp-all-pets-back-to-farmhouse-on-day-started.name": "Return All Pets Home on Day Start",
+  "config.warp-all-pets-back-to-farmhouse-on-day-started.tooltip": "Automatically return all pets to the farmhouse at the start of each day.",
+
+  "config.fill-up-team-on-day-started.name": "Fill Follow Team on Day Start",
+  "config.fill-up-team-on-day-started.tooltip": "Automatically fill your following team to max with available pets at the start of each day."
+  
 
 }

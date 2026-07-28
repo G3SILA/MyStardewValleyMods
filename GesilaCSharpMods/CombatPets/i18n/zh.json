@@ -46,5 +46,13 @@
   "config.show-health-bar.tooltip": "选择何时显示宠物的生命值条。",
   "config.show-health-bar.always": "始终显示",
   "config.show-health-bar.in-combat": "战斗中",
-  "config.show-health-bar.never": "从不显示"
+  "config.show-health-bar.never": "从不显示",
+
+  "config.general.section": "通用设置",
+
+  "config.warp-all-pets-back-to-farmhouse-on-day-started.name": "每天开始时让所有宠物回家",
+  "config.warp-all-pets-back-to-farmhouse-on-day-started.tooltip": "每天开始时，自动将所有宠物送回农舍。",
+
+  "config.fill-up-team-on-day-started.name": "每天开始时补满跟随队伍",
+  "config.fill-up-team-on-day-started.tooltip": "每天开始时，自动使用可用宠物补满你的跟随队伍。"
 }
