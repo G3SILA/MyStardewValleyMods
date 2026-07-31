@@ -80,32 +80,11 @@ namespace CombatPets
                 attackMode = false;
             }
 
-            // if stucked for 1 second and player is moving
-            if (pet.TilePoint == _lastTile &&
-                _playerLastPosition != player.Position && pet.controller != null)
+            updateStuckCounter(player);
+
+            if (CheckStuck(player)) 
             {
-                stuckCounter += 2; // player move slow, count faster
-            }
-            else if (pet.TilePoint == _lastTile &&
-                IsCharacterFarAway(player, pet) && pet.controller != null)
-            {
-                stuckCounter++;
-            }
-            else
-            {
-                stuckCounter = 0;
-                _lastTile = pet.TilePoint;
-            }
-            _playerLastPosition = player.Position;
-            
-            // need to follow more closely in mine
-            if (attackMode && stuckCounter > 30)
-            {
-                OnStuck();
-                return;
-            } else if (stuckCounter > 60 && IsCharacterFarAway(player, pet))
-            {
-                OnStuck();
+                OnStuck(player);
                 return;
             }
 
@@ -151,6 +130,12 @@ namespace CombatPets
             WarpPet(pet, e.NewLocation, false);
         }
 
+        /// <summary>
+        /// find destination for pet, near player or to monster
+        /// </summary>
+        /// <param name="pet"></param>
+        /// <param name="IsMonster">if destination is to monster</param>
+        /// <returns></returns>
         private Point? FindDestinationForPet(Pet pet, out bool IsMonster)
         {
             IsMonster = false;
@@ -192,6 +177,13 @@ namespace CombatPets
         {
             return findPathForPet(pet, destination, Game1.player.facingDirection.Get());
         }
+        /// <summary>
+        /// try to find path, and set up controller for pet
+        /// </summary>
+        /// <param name="pet"></param>
+        /// <param name="destination"></param>
+        /// <param name="direction">facing direction</param>
+        /// <returns></returns>
         private bool findPathForPet(Pet pet, Point destination, int direction)
         {
             TakeControlOfPet(pet);
@@ -228,7 +220,12 @@ namespace CombatPets
 
         }
 
-        // handle warp, different location / map
+        /// <summary>
+        /// handle warp to new location
+        /// </summary>
+        /// <param name="pet"></param>
+        /// <param name="newLocation"></param>
+        /// <param name="jump"></param>
 
         private void WarpPet(Pet pet, GameLocation newLocation, bool jump = true)
         {
@@ -261,6 +258,11 @@ namespace CombatPets
             return false;
         }
 
+        /// <summary>
+        /// Return a nearby monster location if any
+        /// </summary>
+        /// <param name="location"></param>
+        /// <returns></returns>
         private Point? HandleAttackDestination(GameLocation location)
         {
             NetCollection<NPC> characters = location.characters;
@@ -282,12 +284,42 @@ namespace CombatPets
             return null;
         }
 
-        private void OnStuck()
+        private void OnStuck(Farmer player)
         {
-            Farmer player = Game1.player;
             Monitor.VerboseLog($"Pet {pet.Name} seems stuck, warping to player.");
             this.WarpPet(pet, player.currentLocation);
             stuckCounter = 0;
+        }
+
+        private bool CheckStuck(Farmer player)
+        {
+            // need to follow more closely in mine
+            if ((attackMode && stuckCounter > 30) || (stuckCounter > 60 && IsCharacterFarAway(player, pet)))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private void updateStuckCounter(Farmer player)
+        {
+            // if stucked for 1 second and player is moving
+            if (pet.TilePoint == _lastTile &&
+                _playerLastPosition != player.Position && pet.controller != null)
+            {
+                stuckCounter += 2; // player move slow, count faster
+            }
+            else if (pet.TilePoint == _lastTile &&
+                IsCharacterFarAway(player, pet) && pet.controller != null)
+            {
+                stuckCounter++;
+            }
+            else
+            {
+                stuckCounter = 0;
+                _lastTile = pet.TilePoint;
+            }
+            _playerLastPosition = player.Position;
         }
     }
 }
