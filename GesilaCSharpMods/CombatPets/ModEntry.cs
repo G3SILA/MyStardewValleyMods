@@ -88,7 +88,7 @@ namespace CombatPets
             Pet? removed = _petRegister.IsPetRemoved(sender, e);
             if (removed != null)
             {
-                PetManager? manager = _petManagers.FirstOrDefault(manager => manager.pet == removed);
+                PetManager? manager = _petManagers.FirstOrDefault(manager => manager.pet.petId == removed.petId);
 
                 if (manager != null)
                 {

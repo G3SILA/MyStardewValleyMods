@@ -41,8 +41,8 @@ namespace CombatPets
 
         public PetManager getManager(Pet pet)
         {
-            return Managers.FirstOrDefault((manager) => pet == manager.pet) ?? 
-                throw new InvalidOperationException($"Expected a PetManager for '{pet.name}', but none was found.");
+            return Managers.FirstOrDefault((manager) => pet.petId == manager.pet.petId) ?? 
+                throw new InvalidOperationException($"Expected a PetManager for '{pet.name}' id {pet.petId}, but none was found.");
         }
         public Pet? IsPetRemoved(object? sender, NpcListChangedEventArgs e)
         {
