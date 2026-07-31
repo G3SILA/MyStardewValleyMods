@@ -13,10 +13,10 @@ namespace CombatPets
 {
     internal class PetMove
     {
-        public Pet pet;
-        public PetState PetState;
-        private static IMonitor Monitor;
-        private static Func<ModConfig>? GetConfig;
+        private readonly Pet pet;
+        private readonly PetState PetState;
+        private readonly IMonitor Monitor;
+        private readonly Func<ModConfig>? GetConfig;
 
         // path finding set
         private Point? _lastDestination;
@@ -41,9 +41,23 @@ namespace CombatPets
             PetPathFinding.initialize(GetConfig);
         }
 
-        public void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
+        public void OnUpdateTicked(object? sender, UpdateTickedEventArgs e, Farmer owner)
         {
-            if (pet == null) return;
+            // host handle warp, repath, etc.
+            if (!Context.IsMainPlayer)
+                return;
+
+            // warp if different location
+            GameLocation? location = pet.currentLocation;
+
+            if (location is null || owner.currentLocation is null)
+                return;
+
+            if (owner.currentLocation != location)
+            {
+                WarpPet(owner, jump: false);
+                return;
+            }
 
             // repath per RePathCoolDown(15) ticks
             if (_repathCooldown > 0)
@@ -52,23 +66,15 @@ namespace CombatPets
                 return;
             }
 
-            // warp if different location
-            Farmer player = Game1.player;
-            GameLocation location = pet.currentLocation;
-            if (player.currentLocation != location)
-            {
-                this.WarpPet(pet, player.currentLocation, false);
-                return;
-            }
-
             if (location is not MineShaft && PetState.State != PetStateEnum.Defeated)
             {
-                PetState.State = PetStateEnum.Following;
+                PetState.SetState(PetStateEnum.Following);
             }
 
             if (PetState.State == PetStateEnum.Attacking)
             {
                 pet.Halt();
+                pet.controller = null;
                 return; 
             }
 
@@ -80,17 +86,17 @@ namespace CombatPets
                 attackMode = false;
             }
 
-            updateStuckCounter(player);
+            updateStuckCounter(owner);
 
-            if (CheckStuck(player)) 
+            if (CheckStuck(owner)) 
             {
-                OnStuck(player);
+                OnStuck(owner);
                 return;
             }
 
             // check if destination is new & far
             bool isMonster;
-            Point? destination = FindDestinationForPet(pet, out isMonster);
+            Point? destination = FindDestinationForPet(owner, out isMonster);
 
             if (destination is null) return;
 
@@ -102,7 +108,7 @@ namespace CombatPets
                     Utilities.GetDirectionFromTileToTile(pet.TilePoint, destination.Value));
             } else
             {
-                isPathFound = findPathForPet(pet, destination.Value);
+                isPathFound = findPathForPet(pet, destination.Value, owner.facingDirection.Get());
             }
 
             if (isPathFound)
@@ -117,17 +123,23 @@ namespace CombatPets
                 ++_noPathFoundWait;
                 if (_noPathFoundWait > GetConfig!().TimeToWarpWhenNoPathFound)
                 {
-                    WarpPet(pet, player.currentLocation);
+                    WarpPet(owner);
                     _noPathFoundWait = 0;
                 }
             }
 
         }
 
-        public void OnWarped(object? sender, WarpedEventArgs e)
+        public void OnOwnerWarped(Farmer owner)
         {
-            if (pet == null) return;
-            WarpPet(pet, e.NewLocation, false);
+            if (!Context.IsMainPlayer
+                || owner.currentLocation is null
+                || pet.currentLocation == owner.currentLocation)
+            {
+                return;
+            }
+
+            WarpPet(owner, jump: false);
         }
 
         /// <summary>
@@ -136,10 +148,9 @@ namespace CombatPets
         /// <param name="pet"></param>
         /// <param name="IsMonster">if destination is to monster</param>
         /// <returns></returns>
-        private Point? FindDestinationForPet(Pet pet, out bool IsMonster)
+        private Point? FindDestinationForPet(Farmer player, out bool IsMonster)
         {
             IsMonster = false;
-            Farmer player = Game1.player;
             Point? playerDestination = Utilities.GetClosestValidTile(pet, player.TilePoint, player.currentLocation);
             // already found way to player
             if (pet.controller != null && _lastDestination == playerDestination)
@@ -173,10 +184,7 @@ namespace CombatPets
 
             return null; // close enough, no need to move
         }
-        private bool findPathForPet(Pet pet, Point destination)
-        {
-            return findPathForPet(pet, destination, Game1.player.facingDirection.Get());
-        }
+
         /// <summary>
         /// try to find path, and set up controller for pet
         /// </summary>
@@ -220,15 +228,26 @@ namespace CombatPets
 
         }
 
+        private void ClearRepathState()
+        {
+            _lastDestination = null;
+            _repathCooldown = 0;
+            _noPathFoundWait = 0;
+            stuckCounter = 0;
+        }
+
         /// <summary>
         /// handle warp to new location
         /// </summary>
         /// <param name="pet"></param>
         /// <param name="newLocation"></param>
         /// <param name="jump"></param>
-
-        private void WarpPet(Pet pet, GameLocation newLocation, bool jump = true)
+        private void WarpPet(Farmer owner, bool jump = true)
         {
+            TakeControlOfPet(pet);
+            ClearRepathState();
+
+            GameLocation newLocation = owner.currentLocation;
             if (jump && GetConfig!().SoundOnJumpPet)
             {
                 pet.jump();
@@ -238,8 +257,8 @@ namespace CombatPets
                 pet.jumpWithoutSound();
             }
 
-            Point p = Utilities.GetClosestValidTile(pet,Game1.player.TilePoint, newLocation);
-            Game1.warpCharacter(pet, newLocation.NameOrUniqueName, p);
+            Point destination = Utilities.GetClosestValidTile(pet, owner.TilePoint, newLocation);
+            Game1.warpCharacter(pet, newLocation.NameOrUniqueName, destination);
 
             Monitor.Log($"Warped pet {pet.Name} to {newLocation.NameOrUniqueName}.", LogLevel.Trace);
         }
@@ -286,8 +305,8 @@ namespace CombatPets
 
         private void OnStuck(Farmer player)
         {
-            Monitor.VerboseLog($"Pet {pet.Name} seems stuck, warping to player.");
-            this.WarpPet(pet, player.currentLocation);
+            Monitor.VerboseLog($"Pet {pet.Name} seems stuck, warping to player {player.name}.");
+            this.WarpPet(player);
             stuckCounter = 0;
         }
 

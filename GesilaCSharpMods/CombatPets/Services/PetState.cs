@@ -24,6 +24,10 @@ namespace CombatPets
         public int AttackedCountDown { get; private set; } = 0;
         public PetStateEnum State { get; set; } = PetStateEnum.Idle;
 
+        public void SetState(PetStateEnum state)
+        {
+            State = state;
+        }
         public void Attacked()
         {
             SetInvincible(60);

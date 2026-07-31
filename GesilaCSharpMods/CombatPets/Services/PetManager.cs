@@ -28,7 +28,6 @@ namespace CombatPets
             PetState.initialize();
 
             _petMove = new PetMove(monitor, getConfig, pet, PetState);
-            _petMove.PetState = PetState;
             _petRenderer = new PetRenderer(Monitor, GetConfig, pet, PetState);
             _combatService = new CombatService(Monitor, GetConfig, Helper, pet, PetState);
 
@@ -57,7 +56,8 @@ namespace CombatPets
 
             if (GetConfig().EnablePetFollowing)
             {
-                _petMove.OnUpdateTicked(sender, e);
+                // use player for now, to be adapted for mult-p
+                _petMove.OnUpdateTicked(sender, e, Game1.player);
             }
 
             if (GetConfig().EnableCombat)
@@ -72,7 +72,7 @@ namespace CombatPets
 
             if (GetConfig().EnablePetFollowing)
             {
-                _petMove.OnWarped(sender, e);
+                _petMove.OnOwnerWarped(e.Player); // for now
             }
 
         }

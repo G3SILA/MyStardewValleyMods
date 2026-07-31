@@ -12,12 +12,12 @@ namespace CombatPets
 {
     internal class CombatService
     {
-        private Pet pet;
-        private static IMonitor Monitor;
-        private static Func<ModConfig>? GetConfig;
-        private static IModHelper Helper;
+        private readonly Pet pet;
+        private readonly IMonitor Monitor;
+        private readonly Func<ModConfig>? GetConfig;
+        private readonly IModHelper Helper;
 
-        private PetState PetState;
+        private readonly PetState PetState;
 
         private static AnimationManager _animationManager;
 
@@ -36,14 +36,9 @@ namespace CombatPets
         // only called when EnableCombat is true
         public void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
         {
-            if (!e.IsMultipleOf(15)) return; // only check every 15 ticks (0.25 seconds)
-
-            if (pet == null) return;
-
-            if (PetState.State == PetStateEnum.Defeated)
-            {
+            // combat service handled by host only
+            if (!Context.IsMainPlayer || pet == null || PetState.State == PetStateEnum.Defeated)
                 return;
-            }
 
             Farmer player = Game1.player;
             GameLocation location = pet.currentLocation;
@@ -55,7 +50,7 @@ namespace CombatPets
 
             if (PetState.State != PetStateEnum.Attacking)
             {
-                PetState.State = PetStateEnum.Combat;
+                PetState.SetState(PetStateEnum.Combat);
             }
 
             Monitor.VerboseLog($"Pet: {pet.name}, State: {PetState.State}, Health: {PetState.Health}");
@@ -72,7 +67,7 @@ namespace CombatPets
             bool damaged = attackMonster();
             if (damaged)
             {
-                attackCoolDown = 2; 
+                attackCoolDown = 30; 
             } else
             {
                 attackCoolDown = 0;
@@ -100,10 +95,10 @@ namespace CombatPets
                 PlayAttackEffects();
                 _animationManager.DrawAttack(location, damageArea, pet.FacingDirection == 1 || pet.FacingDirection == 3);
 
-                PetState.State = PetStateEnum.Attacking;
+                PetState.SetState(PetStateEnum.Attacking);
                 DelayedAction.functionAfterDelay(() => {
-                    if (PetState.IsAlive()) PetState.State = PetStateEnum.Combat;
-                    else PetState.State = PetStateEnum.Defeated;
+                    if (PetState.IsAlive()) PetState.SetState(PetStateEnum.Combat);
+                    else PetState.SetState(PetStateEnum.Defeated);
                 }, 300);
             }
             Monitor.Log($"Did perform attack: {damaged}", LogLevel.Trace);
@@ -225,7 +220,7 @@ namespace CombatPets
 
             if (!PetState.IsAlive())
             {
-                PetState.State = PetStateEnum.Defeated;
+                PetState.SetState(PetStateEnum.Defeated);
                 Game1.showGlobalMessage(Helper.Translation.Get("combat-service.pet-defeat-announcement", new { petName = pet.name }));
             }
 
