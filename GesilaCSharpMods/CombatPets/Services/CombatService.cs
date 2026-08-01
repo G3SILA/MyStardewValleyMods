@@ -208,7 +208,7 @@ namespace CombatPets
             }
 
             // damaged
-            PetState.Health = Math.Max(0, PetState.Health - damage);
+            PetState.SetHealth(Math.Max(0, PetState.Health - damage));
             
             PetState.Attacked();
 

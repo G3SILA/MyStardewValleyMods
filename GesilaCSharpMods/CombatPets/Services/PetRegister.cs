@@ -18,14 +18,16 @@ namespace CombatPets
         private readonly IMonitor Monitor;
         private readonly IModHelper Helper;
         private readonly Func<ModConfig> GetConfig;
+        public PetDataService Data { get; }
 
         private readonly Dictionary<string, PetManager> Managers = new();
         public IEnumerable<PetManager> AllManagers => Managers.Values;
-        public PetRegister(IMonitor monitor, IModHelper helper, Func<ModConfig> getConfig)
+        public PetRegister(IMonitor monitor, IModHelper helper, Func<ModConfig> getConfig, PetDataService data)
         {
             Monitor = monitor;
             Helper = helper;
             GetConfig = getConfig;
+            Data = data;
         }
 
         public void OnDayStarted(object? sender, DayStartedEventArgs e)
@@ -34,7 +36,8 @@ namespace CombatPets
             foreach (Pet pet in Pets)
             {
                 string id = GetPetId(pet);
-                var petManager = new PetManager(Monitor, GetConfig, this.Helper, pet);
+
+                var petManager = new PetManager(Monitor, GetConfig, this.Helper, pet, Data);
                 if (id is not null)
                 {
                     Managers[id] = petManager;

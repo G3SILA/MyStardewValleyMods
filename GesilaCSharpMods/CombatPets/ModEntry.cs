@@ -21,7 +21,8 @@ namespace CombatPets
         public override void Entry(IModHelper helper)
         {
             this._config = this.Helper.ReadConfig<ModConfig>();
-            _petRegister = new PetRegister(Monitor, helper, () => _config);
+            PetDataService Data = new(ModManifest, Monitor);
+            _petRegister = new PetRegister(Monitor, helper, () => _config, Data);
 
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             helper.Events.GameLoop.DayStarted += this.OnDayStarted;

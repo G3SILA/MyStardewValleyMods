@@ -7,27 +7,39 @@ namespace CombatPets
 {
     internal class PetState
     {
-        public Pet pet; 
-        private static Func<ModConfig>? GetConfig;
-        private static IMonitor Monitor;
+        private readonly Pet pet;
+        private readonly PetDataService Data;
+        private readonly Func<ModConfig>? GetConfig;
+        private readonly IMonitor Monitor;
 
-        public PetState(Pet pet, Func<ModConfig>? getConfig, IMonitor monitor)
+        public PetState(Pet pet, Func<ModConfig>? getConfig, IMonitor monitor, PetDataService data)
         {
             this.pet = pet;
             GetConfig = getConfig;
             Monitor = monitor;
+            Data = data;
         }
 
-        public int MaxHealth;
-        public int Health;
+        public int MaxHealth => Data.GetMaxHealth(pet, 1);
+        public int Health => Data.GetHealth(pet, MaxHealth);
         public int InvincibleCountDown { get; private set; } = 0;
         public int AttackedCountDown { get; private set; } = 0;
-        public PetStateEnum State { get; set; } = PetStateEnum.Idle;
+        public PetStateEnum State => Data.GetState(pet);
 
         public void SetState(PetStateEnum state)
         {
-            State = state;
+            if (!Context.IsMainPlayer || State == state) return;
+
+            Data.SetState(pet, state);
         }
+
+        public void SetHealth(int value)
+        {
+            if (!Context.IsMainPlayer) return;
+
+            Data.SetHealth(pet, value);
+        }
+
         public void Attacked()
         {
             SetInvincible(60);
@@ -40,10 +52,11 @@ namespace CombatPets
 
         public void initialize()
         {
-            Farmer player = Game1.player;
-            MaxHealth = (int)((pet.friendshipTowardFarmer.Value / 10 + 50) * getStrengthMagnification());
-            Health = MaxHealth;
-            State = PetStateEnum.Idle;
+            if (!Context.IsMainPlayer) return;
+
+            Data.SetMaxHealth( pet, (int)((pet.friendshipTowardFarmer.Value / 10 + 50) * getStrengthMagnification()));
+            SetHealth(MaxHealth);
+            SetState(PetStateEnum.Idle);
         }
 
         public float getStrengthMagnification()
@@ -72,6 +85,11 @@ namespace CombatPets
         {
             return InvincibleCountDown > 0;
         }
+
+        /// <summary>
+        /// set to ticks if current invincible countdown is less than ticks, otherwise do nothing
+        /// </summary>
+        /// <param name="ticks"></param>
         public void SetInvincible(int ticks)
         {
             if (InvincibleCountDown > ticks) return;
@@ -99,7 +117,7 @@ namespace CombatPets
             {
                 if (Health > 0 && Health < MaxHealth)
                 {
-                    ++Health;
+                    SetHealth(Health + 1);
                 }
 
             }

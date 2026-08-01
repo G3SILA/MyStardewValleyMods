@@ -11,6 +11,7 @@ namespace CombatPets
         private readonly IMonitor Monitor;
         private readonly IModHelper Helper;
         private readonly Func<ModConfig> GetConfig;
+        private readonly PetDataService Data;
 
         public Pet pet;
         public PetState PetState;
@@ -19,19 +20,19 @@ namespace CombatPets
         private readonly CombatService _combatService;
         private readonly PetRenderer _petRenderer;
 
-        public PetManager(IMonitor monitor, Func<ModConfig> getConfig, IModHelper helper, Pet pet)
+        public PetManager(IMonitor monitor, Func<ModConfig> getConfig, IModHelper helper, Pet pet, PetDataService data)
         {
             Monitor = monitor;
             GetConfig = getConfig;
             Helper = helper;
             this.pet = pet;
-            this.PetState = new PetState(pet, GetConfig, Monitor);
+            this.PetState = new PetState(pet, GetConfig, Monitor, data);
             PetState.initialize();
 
             _petMove = new PetMove(monitor, getConfig, pet, PetState);
             _petRenderer = new PetRenderer(Monitor, GetConfig, pet, PetState);
             _combatService = new CombatService(Monitor, GetConfig, Helper, pet, PetState);
-
+            Data = data;
         }
 
 
