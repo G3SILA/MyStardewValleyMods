@@ -114,14 +114,18 @@ namespace CombatPets
 
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
         {
-            if (!Context.IsWorldReady)
+            if (!Context.IsWorldReady
+                || e.Button != _config.TogglePetFollowingKeybind
+                || Game1.currentLocation is null)
+            {
                 return;
+            }
 
             _petRegister.ApplyToAllPets(pet =>
             {
                 Vector2 tileLocation = e.Cursor.GrabTile;
-                Rectangle tileRect = new Rectangle((int)tileLocation.X * 64, (int)tileLocation.Y * 64, 64, 64);
-                if (e.Button == _config.TogglePetFollowingKeybind && pet.GetBoundingBox().Intersects(tileRect))
+                Rectangle tileRect = new Rectangle((int)tileLocation.X * Game1.tileSize, (int)tileLocation.Y * Game1.tileSize, Game1.tileSize, Game1.tileSize);
+                if (pet.GetBoundingBox().Intersects(tileRect))
                 {
                     if (_petManagers.Contains(_petRegister.getManager(pet)))
                     {

@@ -17,11 +17,10 @@ namespace CombatPets
     {
         private readonly IMonitor Monitor;
         private readonly IModHelper Helper;
-        private Func<ModConfig> GetConfig;
+        private readonly Func<ModConfig> GetConfig;
 
-        // all pets & corresponding managers
-        public List<Pet> Pets = new();
-        public List<PetManager> Managers = new();
+        private readonly Dictionary<string, PetManager> Managers = new();
+        public IEnumerable<PetManager> AllManagers => Managers.Values;
         public PetRegister(IMonitor monitor, IModHelper helper, Func<ModConfig> getConfig)
         {
             Monitor = monitor;
@@ -31,19 +30,30 @@ namespace CombatPets
 
         public void OnDayStarted(object? sender, DayStartedEventArgs e)
         {
-            Pets = getAllPetsInAllLocations();
+            List<Pet> Pets = getAllPetsInAllLocations();
             foreach (Pet pet in Pets)
             {
+                string id = GetPetId(pet);
                 var petManager = new PetManager(Monitor, GetConfig, this.Helper, pet);
-                Managers.Add(petManager);
+                if (id is not null)
+                {
+                    Managers[id] = petManager;
+                }
             }
         }
 
-        public PetManager getManager(Pet pet)
+        public PetManager? getManager(string petId)
         {
-            return Managers.FirstOrDefault((manager) => pet.petId == manager.pet.petId) ?? 
-                throw new InvalidOperationException($"Expected a PetManager for '{pet.name}' id {pet.petId}, but none was found.");
+            Managers.TryGetValue(petId, out PetManager? manager);
+            return manager;
         }
+
+        public PetManager? getManager(Pet pet)
+        {
+            string? petId = GetPetId(pet);
+            return petId is null ? null : getManager(petId);
+        }
+
         public Pet? IsPetRemoved(object? sender, NpcListChangedEventArgs e)
         {
             if (!e.IsCurrentLocation)
@@ -66,11 +76,6 @@ namespace CombatPets
             return null;
         }
 
-        public bool HasPets()
-        {
-            return Pets.Count > 0;
-        }
-
         public List<Pet> getAllPetsInAllLocations()
         {
             List<Pet> allPets = new();
@@ -88,10 +93,16 @@ namespace CombatPets
         }
         public void ApplyToAllPets(Action<Pet> action)
         {
-            foreach (var pet in Pets)
+            foreach (var manager in AllManagers)
             {
-                action(pet);
+                action(manager.pet);
             }
+        }
+
+        public string? GetPetId(Pet pet)
+        {
+            Guid id = pet.petId.Value;
+            return id == Guid.Empty ? null : id.ToString("N");
         }
     }
 }

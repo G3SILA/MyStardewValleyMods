@@ -10,10 +10,10 @@ namespace CombatPets
 {
     internal class PetRenderer
     {
-        private static IMonitor Monitor;
-        private Func<ModConfig> GetConfig;
-        public Pet pet; 
-        private PetState PetState;
+        private readonly IMonitor Monitor;
+        private readonly Func<ModConfig> GetConfig;
+        private readonly Pet pet; 
+        private readonly PetState PetState;
 
         public PetRenderer(IMonitor monitor, Func<ModConfig> getconfig, Pet pet, PetState state)
         {
@@ -24,8 +24,10 @@ namespace CombatPets
         }
 
         public void OnRendered(object? sender, RenderedEventArgs e)
-        { 
-            if (pet == null) return;
+        {
+
+            if (pet.currentLocation != Game1.currentLocation)
+                return;
 
             if (GetConfig().ShowHealthBar == ShowHealthBar.Always)
             {

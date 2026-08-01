@@ -8,15 +8,16 @@ namespace CombatPets
 {
     internal class PetManager
     {
-        private static IMonitor Monitor;
-        private static IModHelper Helper;
-        private static Func<ModConfig> GetConfig;
+        private readonly IMonitor Monitor;
+        private readonly IModHelper Helper;
+        private readonly Func<ModConfig> GetConfig;
 
         public Pet pet;
         public PetState PetState;
-        private PetMove _petMove;
-        private CombatService _combatService;
-        private PetRenderer _petRenderer;
+
+        private readonly PetMove _petMove;
+        private readonly CombatService _combatService;
+        private readonly PetRenderer _petRenderer;
 
         public PetManager(IMonitor monitor, Func<ModConfig> getConfig, IModHelper helper, Pet pet)
         {
