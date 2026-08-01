@@ -5,6 +5,7 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Characters;
+using StardewValley.Locations;
 
 namespace CombatPets
 {
@@ -128,6 +129,11 @@ namespace CombatPets
                 Rectangle tileRect = new Rectangle((int)tileLocation.X * Game1.tileSize, (int)tileLocation.Y * Game1.tileSize, Game1.tileSize, Game1.tileSize);
                 if (pet.GetBoundingBox().Intersects(tileRect))
                 {
+                    if (Game1.currentLocation is MineShaft)
+                    {
+                        Game1.showRedMessage(Helper.Translation.Get("follow.disabled-in-mines", new { petName = pet.name }));
+                        return;
+                    }
                     if (_petManagers.Contains(_petRegister.getManager(pet)))
                     {
                         removeFromFollow(pet);

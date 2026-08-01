@@ -2,6 +2,7 @@
   "follow.started": "{{petName}} is with you.",
   "follow.capacity-reached": "Maximum following capacity reached (can be modified in configuration).",
   "follow.stopped": "{{petName}} stops following.",
+  "follow.disabled-in-mines": "Don't leave {{petName}} in the mine!",
 
   "combat-service.pet-defeat-announcement": "{{petName}} is exhausted today, cannot fight anymore.",
 
@@ -48,7 +49,7 @@
   "config.show-health-bar.in-combat": "In Combat",
   "config.show-health-bar.never": "Never",
 
-  
+
   "config.general.section": "General",
 
   "config.warp-all-pets-back-to-farmhouse-on-day-started.name": "Return All Pets Home on Day Start",
@@ -56,6 +57,6 @@
 
   "config.fill-up-team-on-day-started.name": "Fill Follow Team on Day Start",
   "config.fill-up-team-on-day-started.tooltip": "Automatically fill your following team to max with available pets at the start of each day."
-  
+
 
 }
