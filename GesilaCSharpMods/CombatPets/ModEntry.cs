@@ -55,7 +55,7 @@ namespace CombatPets
             {
                 _petRegister.getAllPetsInAllLocations().ForEach(pet =>
                 {
-                    addToFollow(pet, false);
+                    addToFollow(pet, Game1.player, false); // for now, only allow main player to add pets to follow
                 });
             }
 
@@ -87,10 +87,14 @@ namespace CombatPets
 
         private void OnNpcListChanged(object? sender, NpcListChangedEventArgs e)
         {
+            // TODO: must be updated for multiplayer, as the pet may not be at the same position as main player
+            if (!Context.IsWorldReady || !Context.IsMainPlayer)
+                return;
+
             Pet? removed = _petRegister.IsPetRemoved(sender, e);
             if (removed != null)
             {
-                PetManager? manager = _petManagers.FirstOrDefault(manager => manager.pet.petId == removed.petId);
+                PetManager? manager = _petRegister.getManager(removed);
 
                 if (manager != null)
                 {
@@ -139,18 +143,29 @@ namespace CombatPets
                         removeFromFollow(pet);
                     } else
                     {
-                        addToFollow(pet);
+                        addToFollow(pet, Game1.player); // for now, only allow main player to add pets to follow
                     }
                 }
             });
         }
 
-        private void addToFollow(Pet pet, bool showFeedback = true)
+        private void addToFollow(Pet pet, Farmer owner, bool showFeedback = true)
         {
             int max = _config.MaxNumberFollowers;
             if (following < max)
             {
-                _petManagers.Add(_petRegister.getManager(pet));
+                var manager = _petRegister.getManager(pet);
+                if (manager.IsFollowing is true)
+                {
+                    if (showFeedback)
+                    {
+                        Game1.showRedMessage(Helper.Translation.Get("follow.already-following", new { petName = pet.name, farmerName = manager.GetOwner().name }));
+                    }
+                    return;
+                }
+
+                manager.AssignOwner(owner.UniqueMultiplayerID);
+                _petManagers.Add(manager);
                 ++following;
                 if (showFeedback)
                 {
@@ -169,9 +184,12 @@ namespace CombatPets
 
         private void removeFromFollow(Pet pet)
         {
-            _petManagers.Remove(_petRegister.getManager(pet));
+            var manager = _petRegister.getManager(pet);
+            manager.StopFollowing();
+            _petManagers.Remove(manager);
             Game1.showGlobalMessage(Helper.Translation.Get("follow.stopped",new { petName = pet.name }));
             --following;
         }
+
     }
 }

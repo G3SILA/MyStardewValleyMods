@@ -16,11 +16,15 @@ namespace CombatPets
         public Pet pet;
         public PetState PetState;
 
+        public string PetId { get; }
+        public bool IsFollowing => Data.IsFollowing(pet);
+        public long? OwnerId => Data.GetOwnerId(pet);
+
         private readonly PetMove _petMove;
         private readonly CombatService _combatService;
         private readonly PetRenderer _petRenderer;
 
-        public PetManager(IMonitor monitor, Func<ModConfig> getConfig, IModHelper helper, Pet pet, PetDataService data)
+        public PetManager(IMonitor monitor, Func<ModConfig> getConfig, IModHelper helper, Pet pet, PetDataService data, string id)
         {
             Monitor = monitor;
             GetConfig = getConfig;
@@ -28,6 +32,7 @@ namespace CombatPets
             this.pet = pet;
             this.PetState = new PetState(pet, GetConfig, Monitor, data);
             PetState.initialize();
+            PetId = id;
 
             _petMove = new PetMove(monitor, getConfig, pet, PetState);
             _petRenderer = new PetRenderer(Monitor, GetConfig, pet, PetState);
@@ -35,19 +40,13 @@ namespace CombatPets
             Data = data;
         }
 
-
-        /* initialize services on day started
-         * find pet and set it to pet move */
         public void OnDayStarted(object? sender, DayStartedEventArgs e)
         {
-            if (pet == null) return;
-            Monitor.Log($"Bringing {pet.Name} Today.", LogLevel.Info);
-
+            if (!Context.IsMainPlayer) return;
+            PetState.initialize();
         }
         public void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
         {
-            if (pet == null) return;
-
             // paused time for singer player & menu on
             if (!Game1.IsMultiplayer && Game1.activeClickableMenu != null)
             {
@@ -56,10 +55,23 @@ namespace CombatPets
 
             PetState.OnUpdateTicked(sender, e);
 
+            // following
+            if (!Context.IsMainPlayer || !IsFollowing) return;
+
+            Farmer? owner = GetOwner();
+            if (owner is null || owner.currentLocation is null) return;
+
+            ModConfig config = GetConfig();
+
+            if (!config.EnableCombat
+                && PetState.State is not PetStateEnum.Defeated)
+            {
+                PetState.SetState(PetStateEnum.Following);
+            }
+
             if (GetConfig().EnablePetFollowing)
             {
-                // use player for now, to be adapted for mult-p
-                _petMove.OnUpdateTicked(sender, e, Game1.player);
+                _petMove.OnUpdateTicked(sender, e, owner);
             }
 
             if (GetConfig().EnableCombat)
@@ -70,9 +82,7 @@ namespace CombatPets
 
         public void OnWarped(object? sender, WarpedEventArgs e)
         {
-            if (pet == null) return;
-
-            if (GetConfig().EnablePetFollowing)
+            if (GetConfig().EnablePetFollowing && IsFollowing)
             {
                 _petMove.OnOwnerWarped(e.Player); // for now
             }
@@ -81,9 +91,27 @@ namespace CombatPets
 
         public void OnRendered(object? sender, RenderedEventArgs e)
         {
-            if (pet == null) return;
-            _petRenderer.OnRendered(sender, e);
+            if (IsFollowing)
+                _petRenderer.OnRendered(sender, e);
 
+        }
+
+        public Farmer? GetOwner()
+        {
+            if (OwnerId is null) return null;
+            return Game1.getOnlineFarmers().FirstOrDefault(farmer => farmer.UniqueMultiplayerID == OwnerId.Value);
+        }
+
+        public void AssignOwner(long ownerId)
+        {
+            Data.SetFollowingOwner(pet, ownerId);
+            PetState.SetState(PetStateEnum.Following);
+        }
+
+        public void StopFollowing()
+        {
+            Data.SetFollowingOwner(pet, null);
+            PetState.SetState(PetStateEnum.Idle);
         }
     }
 }

@@ -37,10 +37,11 @@ namespace CombatPets
             {
                 string id = GetPetId(pet);
 
-                var petManager = new PetManager(Monitor, GetConfig, this.Helper, pet, Data);
-                if (id is not null)
-                {
+                if (id is not null) { 
+                    var petManager = new PetManager(Monitor, GetConfig, this.Helper, pet, Data, id);
                     Managers[id] = petManager;
+
+                    Monitor.VerboseLog($"PetRegister: Found pet {pet.name} with id {id}");
                 }
             }
         }
@@ -59,6 +60,7 @@ namespace CombatPets
 
         public Pet? IsPetRemoved(object? sender, NpcListChangedEventArgs e)
         {
+            // TODO: must be updated for multiplayer, as the pet may not be at the same position as main player
             if (!e.IsCurrentLocation)
             {
                 return null;

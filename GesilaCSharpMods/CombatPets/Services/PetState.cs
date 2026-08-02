@@ -112,6 +112,9 @@ namespace CombatPets
                 AttackedCountDown--;
             }
 
+            // below is only for host
+            if (!Game1.IsMasterGame) return;
+
             // restore health over time
             if (e.IsMultipleOf(60) && State != PetStateEnum.Defeated)
             {
