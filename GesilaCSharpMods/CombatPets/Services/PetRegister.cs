@@ -4,6 +4,7 @@ using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Characters;
 using StardewValley.Locations;
+using Microsoft.Xna.Framework;
 
 /*
     Find all pets in the world and store them in a list
@@ -108,6 +109,13 @@ namespace CombatPets
         {
             Guid id = pet.petId.Value;
             return id == Guid.Empty ? null : id.ToString("N");
+        }
+
+        public PetManager? FindAtTile(GameLocation location, Rectangle tileArea)
+        {
+            return AllManagers.FirstOrDefault(manager => manager.pet.currentLocation == location
+                    && manager.pet.GetBoundingBox().Intersects(tileArea)
+            );
         }
     }
 }

@@ -4,6 +4,7 @@
   "follow.stopped": "{{petName}} stops following.",
   "follow.disabled-in-mines": "Don't leave {{petName}} in the mine!",
   "follow.already-following": "{{petName}} is already following {{farmerName}}",
+  "follow.pet-not-found": "That pet could not be found by the host.",
 
   "combat-service.pet-defeat-announcement": "{{petName}} is exhausted today, cannot fight anymore.",
 

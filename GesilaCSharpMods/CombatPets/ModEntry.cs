@@ -12,9 +12,10 @@ namespace CombatPets
     internal sealed class ModEntry : Mod
     {
         private int following = 0; 
-        public ModConfig _config;
+        public ModConfig _config = null!;
 
-        private PetRegister _petRegister;
+        private MultiplayerService Multiplayer = null!;
+        private PetRegister _petRegister = null!;
 
         // current following managers
         private List<PetManager> _petManagers = new();
@@ -23,6 +24,8 @@ namespace CombatPets
         {
             this._config = this.Helper.ReadConfig<ModConfig>();
             PetDataService Data = new(ModManifest, Monitor);
+            Multiplayer = new MultiplayerService(this);
+
             _petRegister = new PetRegister(Monitor, helper, () => _config, Data);
 
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
@@ -32,6 +35,10 @@ namespace CombatPets
             helper.Events.World.NpcListChanged += this.OnNpcListChanged;
             helper.Events.Display.Rendered += this.OnRendered;
             helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+
+            helper.Events.Multiplayer.ModMessageReceived += Multiplayer.OnModMessageReceived;
+            helper.Events.Multiplayer.PeerConnected += Multiplayer.OnPeerConnected;
+            Multiplayer.ToggleFollowRequested += HandleToggleFollowRequest;
         }
 
         // integration with Generic Mod Config Menu
@@ -127,59 +134,41 @@ namespace CombatPets
                 return;
             }
 
-            _petRegister.ApplyToAllPets(pet =>
+            Vector2 tileLocation = e.Cursor.GrabTile;
+            Rectangle tileRect = new Rectangle((int)tileLocation.X * Game1.tileSize, (int)tileLocation.Y * Game1.tileSize, Game1.tileSize, Game1.tileSize);
+
+            PetManager? manager = _petRegister.FindAtTile(Game1.currentLocation, tileRect);
+
+            if (manager == null) return;
+
+            if (Game1.currentLocation is MineShaft)
             {
-                Vector2 tileLocation = e.Cursor.GrabTile;
-                Rectangle tileRect = new Rectangle((int)tileLocation.X * Game1.tileSize, (int)tileLocation.Y * Game1.tileSize, Game1.tileSize, Game1.tileSize);
-                if (pet.GetBoundingBox().Intersects(tileRect))
-                {
-                    if (Game1.currentLocation is MineShaft)
-                    {
-                        Game1.showRedMessage(Helper.Translation.Get("follow.disabled-in-mines", new { petName = pet.name }));
-                        return;
-                    }
-                    if (_petManagers.Contains(_petRegister.getManager(pet)))
-                    {
-                        removeFromFollow(pet);
-                    } else
-                    {
-                        addToFollow(pet, Game1.player); // for now, only allow main player to add pets to follow
-                    }
-                }
-            });
+                Game1.showRedMessage(Helper.Translation.Get("follow.disabled-in-mines", new { petName = manager.pet.name }));
+                return;
+            }
+
+            string petId = manager.PetId;
+            if (Context.IsMainPlayer)
+                HandleToggleFollowRequest(Game1.player.UniqueMultiplayerID, petId);
+            else
+                Multiplayer.SendToggleFollowRequest(petId);     
+
         }
 
         private void addToFollow(Pet pet, Farmer owner, bool showFeedback = true)
         {
-            int max = _config.MaxNumberFollowers;
-            if (following < max)
-            {
-                var manager = _petRegister.getManager(pet);
-                if (manager.IsFollowing is true)
-                {
-                    if (showFeedback)
-                    {
-                        Game1.showRedMessage(Helper.Translation.Get("follow.already-following", new { petName = pet.name, farmerName = manager.GetOwner().name }));
-                    }
-                    return;
-                }
+            
+            var manager = _petRegister.getManager(pet);
 
-                manager.AssignOwner(owner.UniqueMultiplayerID);
-                _petManagers.Add(manager);
-                ++following;
-                if (showFeedback)
-                {
-                    Game1.showGlobalMessage(Helper.Translation.Get("follow.started", new { petName = pet.name }));
-                    pet.playContentSound();
-                    pet.doEmote(56);
-                }
-            } else
+            manager.AssignOwner(owner.UniqueMultiplayerID);
+            _petManagers.Add(manager);
+            ++following;
+            if (showFeedback)
             {
-                if (showFeedback)
-                {
-                    Game1.showRedMessage(Helper.Translation.Get("follow.capacity-reached"));
-                }
+                pet.playContentSound();
+                pet.doEmote(56);
             }
+            
         }
 
         private void removeFromFollow(Pet pet)
@@ -187,8 +176,45 @@ namespace CombatPets
             var manager = _petRegister.getManager(pet);
             manager.StopFollowing();
             _petManagers.Remove(manager);
-            Game1.showGlobalMessage(Helper.Translation.Get("follow.stopped",new { petName = pet.name }));
             --following;
+        }
+
+
+        private void HandleToggleFollowRequest(long requesterId, string petId)
+        {
+            if (!Context.IsMainPlayer) return;
+
+            Farmer? requester = Game1.getOnlineFarmers().FirstOrDefault(farmer => farmer.UniqueMultiplayerID == requesterId);
+            PetManager? manager = _petRegister.getManager(petId);
+
+            ToggleFollowResultMessage result;
+            if (requester is null || manager is null)
+            {
+                result = ToggleFollowResultMessage.Failure(petId, manager?.pet.Name ?? "", "not-found");
+            }
+            else if (manager.IsFollowing && manager.OwnerId != requesterId)
+            {
+                result = ToggleFollowResultMessage.Failure(petId, manager.pet.Name, "owned");
+            }
+            else if (manager.IsFollowing)
+            {
+                removeFromFollow(manager.pet);
+                result = ToggleFollowResultMessage.SuccessToggle(manager, isFollowing: false);
+            }
+            else if (following >= _config.MaxNumberFollowers)
+            {
+                result = ToggleFollowResultMessage.Failure(petId, manager.pet.Name, "capacity");
+            }
+            else
+            {
+                addToFollow(manager.pet, requester);
+                result = ToggleFollowResultMessage.SuccessToggle(manager, isFollowing: true);
+            }
+
+            if (requesterId == Game1.player.UniqueMultiplayerID)
+                Multiplayer.ShowToggleFollowResult(result);
+            else
+                Multiplayer.SendToggleFollowResult(requesterId, result);
         }
 
     }
