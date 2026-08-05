@@ -103,6 +103,7 @@ namespace CombatPets
 
             string message = result.ErrorCode switch
             {
+                "disabled-in-mines" => Mod.Helper.Translation.Get("follow.disabled-in-mines", new { petName = result.PetName}),
                 "capacity" => Mod.Helper.Translation.Get("follow.capacity-reached"),
                 "owned" => Mod.Helper.Translation.Get("follow.already-following", 
                 new { petName = result.PetName, farmerName = result.OwnerName }),

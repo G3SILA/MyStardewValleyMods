@@ -17,9 +17,6 @@ namespace CombatPets
         private MultiplayerService Multiplayer = null!;
         private PetRegister _petRegister = null!;
 
-        // current following managers
-        private List<PetManager> _petManagers = new();
-
         public override void Entry(IModHelper helper)
         {
             this._config = this.Helper.ReadConfig<ModConfig>();
@@ -56,32 +53,37 @@ namespace CombatPets
 
             // restart everyday
             following = 0;
-            _petManagers.Clear();
+
+            foreach (PetManager manager in _petRegister.AllManagers)
+            {
+                manager.StopFollowing();
+                manager.OnDayStarted(sender, e);
+            }
 
             if (_config.FillUpTeamOnDayStarted)
             {
-                _petRegister.getAllPetsInAllLocations().ForEach(pet =>
+                foreach (PetManager manager in _petRegister.AllManagers.Take(_config.MaxNumberFollowers))
                 {
-                    addToFollow(pet, Game1.player, false); // for now, only allow main player to add pets to follow
-                });
+                    addToFollow(manager.pet, Game1.MasterPlayer, showFeedback: false);
+                }  
+                // fill up client as well?
             }
 
             if (_config.WarpAllPetsBackToFarmHouseOnDayStarted)
             {
                 _petRegister.ApplyToAllPets(pet =>
                 {
-                    Game1.warpCharacter(pet, "FarmHouse", Game1.player.TilePoint);
+                    Game1.warpCharacter(pet, "FarmHouse", Game1.MasterPlayer.TilePoint);
                 });
             }
 
-            ApplyToAllPetManagers(manager => manager.OnDayStarted(sender, e));
         }
 
         private void OnWarped(object? sender, WarpedEventArgs e)
         {
             if (!Context.IsWorldReady)
                 return;
-            ApplyToAllPetManagers(manager => manager.OnWarped(sender, e)); 
+            _petRegister.ApplyToAllFollowingManagers(manager => manager.OnWarped(sender, e)); 
 
         }
 
@@ -89,7 +91,7 @@ namespace CombatPets
         {
             if (!Context.IsWorldReady)
                 return;
-            ApplyToAllPetManagers(manager => manager.OnUpdateTicked(sender, e));
+            _petRegister.ApplyToAllFollowingManagers(manager => manager.OnUpdateTicked(sender, e));
         }
 
         private void OnNpcListChanged(object? sender, NpcListChangedEventArgs e)
@@ -102,27 +104,17 @@ namespace CombatPets
             if (removed != null)
             {
                 PetManager? manager = _petRegister.getManager(removed);
-
-                if (manager != null)
-                {
-                    _petManagers.Remove(manager);
-                }
+                // ? 
+                if (manager is not null)
+                    Monitor.VerboseLog($"{manager.pet.name} is leaving us forever!!!");
             }
         }
 
         private void OnRendered(object? sender, RenderedEventArgs e)
         {
-            if (!Context.IsWorldReady || _petManagers is null)
+            if (!Context.IsWorldReady)
                 return;
-            ApplyToAllPetManagers(manager => manager.OnRendered(sender, e));
-        }
-
-        private void ApplyToAllPetManagers(Action<PetManager> action)
-        {
-            foreach (var manager in _petManagers)
-            {
-                action(manager);
-            }
+            _petRegister.ApplyToAllFollowingManagers(manager => manager.OnRendered(sender, e));
         }
 
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -137,17 +129,14 @@ namespace CombatPets
             Vector2 tileLocation = e.Cursor.GrabTile;
             Rectangle tileRect = new Rectangle((int)tileLocation.X * Game1.tileSize, (int)tileLocation.Y * Game1.tileSize, Game1.tileSize, Game1.tileSize);
 
-            PetManager? manager = _petRegister.FindAtTile(Game1.currentLocation, tileRect);
+            string? petId = _petRegister.FindAtTile(Game1.currentLocation, tileRect);
 
-            if (manager == null) return;
-
-            if (Game1.currentLocation is MineShaft)
+            if (petId is null)
             {
-                Game1.showRedMessage(Helper.Translation.Get("follow.disabled-in-mines", new { petName = manager.pet.name }));
+                Monitor.VerboseLog($"No pet found at {tileLocation}");
                 return;
             }
 
-            string petId = manager.PetId;
             if (Context.IsMainPlayer)
                 HandleToggleFollowRequest(Game1.player.UniqueMultiplayerID, petId);
             else
@@ -161,7 +150,6 @@ namespace CombatPets
             var manager = _petRegister.getManager(pet);
 
             manager.AssignOwner(owner.UniqueMultiplayerID);
-            _petManagers.Add(manager);
             ++following;
             if (showFeedback)
             {
@@ -175,7 +163,6 @@ namespace CombatPets
         {
             var manager = _petRegister.getManager(pet);
             manager.StopFollowing();
-            _petManagers.Remove(manager);
             --following;
         }
 
@@ -187,10 +174,15 @@ namespace CombatPets
             Farmer? requester = Game1.getOnlineFarmers().FirstOrDefault(farmer => farmer.UniqueMultiplayerID == requesterId);
             PetManager? manager = _petRegister.getManager(petId);
 
+
             ToggleFollowResultMessage result;
             if (requester is null || manager is null)
             {
                 result = ToggleFollowResultMessage.Failure(petId, manager?.pet.Name ?? "", "not-found");
+            }
+            else if (requester.currentLocation is MineShaft)
+            {
+                result = ToggleFollowResultMessage.Failure(petId, manager.pet.Name, "disabled-in-mines");
             }
             else if (manager.IsFollowing && manager.OwnerId != requesterId)
             {

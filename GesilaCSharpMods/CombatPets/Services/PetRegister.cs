@@ -105,17 +105,36 @@ namespace CombatPets
             }
         }
 
+        public void ApplyToAllFollowingManagers(Action<PetManager> action)
+        {
+            foreach (var manager in AllManagers)
+            {
+                if (manager.IsFollowing)
+                {
+                    action(manager);
+                }
+            }
+        }
+
         public string? GetPetId(Pet pet)
         {
             Guid id = pet.petId.Value;
             return id == Guid.Empty ? null : id.ToString("N");
         }
 
-        public PetManager? FindAtTile(GameLocation location, Rectangle tileArea)
+        /// <summary>
+        /// return petID if a pet is found at the given tile area, otherwise return null
+        /// return id since client may not have the same pet object as the server
+        /// </summary>
+        /// <param name="location"></param>
+        /// <param name="tileArea"></param>
+        /// <returns></returns>
+        public string? FindAtTile(GameLocation location, Rectangle tileArea)
         {
-            return AllManagers.FirstOrDefault(manager => manager.pet.currentLocation == location
-                    && manager.pet.GetBoundingBox().Intersects(tileArea)
-            );
+            Pet? clickPet = Game1.currentLocation.characters.OfType<Pet>().FirstOrDefault(pet =>
+                pet.GetBoundingBox().Intersects(tileArea));
+
+            return clickPet is not null ? GetPetId(clickPet) : null;
         }
     }
 }
