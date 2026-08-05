@@ -21,14 +21,18 @@ namespace CombatPets
         private readonly Func<ModConfig> GetConfig;
         public PetDataService Data { get; }
 
+        private readonly MultiplayerService Multiplayer;
+
         private readonly Dictionary<string, PetManager> Managers = new();
         public IEnumerable<PetManager> AllManagers => Managers.Values;
-        public PetRegister(IMonitor monitor, IModHelper helper, Func<ModConfig> getConfig, PetDataService data)
+        public int following => AllManagers.Count(manager => manager.IsFollowing);
+        public PetRegister(IMonitor monitor, IModHelper helper, Func<ModConfig> getConfig, PetDataService data, MultiplayerService mult)
         {
             Monitor = monitor;
             Helper = helper;
             GetConfig = getConfig;
             Data = data;
+            Multiplayer = mult;
         }
 
         public void OnDayStarted(object? sender, DayStartedEventArgs e)
@@ -135,6 +139,70 @@ namespace CombatPets
                 pet.GetBoundingBox().Intersects(tileArea));
 
             return clickPet is not null ? GetPetId(clickPet) : null;
+        }
+
+
+
+        public void addToFollow(Pet pet, Farmer owner, bool showFeedback = true)
+        {
+            var manager = getManager(pet);
+
+            manager.AssignOwner(owner.UniqueMultiplayerID);
+            if (showFeedback)
+            {
+                pet.playContentSound();
+                pet.doEmote(56);
+            }
+
+        }
+
+        public void removeFromFollow(Pet pet)
+        {
+            var manager = getManager(pet);
+            manager.StopFollowing();
+        }
+
+
+        public void HandleToggleFollowRequest(long requesterId, string petId)
+        {
+            if (!Context.IsMainPlayer) return;
+
+            Farmer? requester = Game1.getOnlineFarmers().FirstOrDefault(farmer => farmer.UniqueMultiplayerID == requesterId);
+            PetManager? manager = getManager(petId);
+
+
+            ToggleFollowResultMessage result;
+            if (requester is null || manager is null)
+            {
+                result = ToggleFollowResultMessage.Failure(petId, manager?.pet.Name ?? "", "not-found");
+            }
+            else if (requester.currentLocation is MineShaft)
+            {
+                result = ToggleFollowResultMessage.Failure(petId, manager.pet.Name, "disabled-in-mines");
+            }
+            else if (manager.IsFollowing && manager.OwnerId != requesterId)
+            {
+                result = ToggleFollowResultMessage.Failure(petId, manager.pet.Name, "owned");
+            }
+            else if (manager.IsFollowing)
+            {
+                removeFromFollow(manager.pet);
+                result = ToggleFollowResultMessage.SuccessToggle(manager, isFollowing: false);
+            }
+            else if (following >= GetConfig().MaxNumberFollowers)
+            {
+                result = ToggleFollowResultMessage.Failure(petId, manager.pet.Name, "capacity");
+            }
+            else
+            {
+                addToFollow(manager.pet, requester);
+                result = ToggleFollowResultMessage.SuccessToggle(manager, isFollowing: true);
+            }
+
+            if (requesterId == Game1.player.UniqueMultiplayerID)
+                Multiplayer.ShowToggleFollowResult(result);
+            else
+                Multiplayer.SendToggleFollowResult(requesterId, result);
         }
     }
 }
