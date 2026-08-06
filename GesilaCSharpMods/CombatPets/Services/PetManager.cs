@@ -24,7 +24,7 @@ namespace CombatPets
         private readonly CombatService _combatService;
         private readonly PetRenderer _petRenderer;
 
-        public PetManager(IMonitor monitor, Func<ModConfig> getConfig, IModHelper helper, Pet pet, PetDataService data, string id)
+        public PetManager(IMonitor monitor, Func<ModConfig> getConfig, IModHelper helper, Pet pet, PetDataService data, string id, MultiplayerService multiplayer)
         {
             Monitor = monitor;
             GetConfig = getConfig;
@@ -36,7 +36,7 @@ namespace CombatPets
 
             _petMove = new PetMove(monitor, getConfig, pet, PetState);
             _petRenderer = new PetRenderer(Monitor, GetConfig, pet, PetState);
-            _combatService = new CombatService(Monitor, GetConfig, Helper, pet, PetState);
+            _combatService = new CombatService(Monitor, GetConfig, Helper, pet, PetState, multiplayer);
             Data = data;
         }
 
@@ -76,7 +76,7 @@ namespace CombatPets
 
             if (GetConfig().EnableCombat)
             {
-                _combatService.OnUpdateTicked(sender, e);
+                _combatService.OnUpdateTicked(sender, e, owner);
             }
         }
 
@@ -104,12 +104,14 @@ namespace CombatPets
 
         public void AssignOwner(long ownerId)
         {
+            if (!Context.IsMainPlayer) return;
             Data.SetFollowingOwner(pet, ownerId);
             PetState.SetState(PetStateEnum.Following);
         }
 
         public void StopFollowing()
         {
+            if (!Context.IsMainPlayer) return;
             Data.SetFollowingOwner(pet, null);
             PetState.SetState(PetStateEnum.Idle);
         }

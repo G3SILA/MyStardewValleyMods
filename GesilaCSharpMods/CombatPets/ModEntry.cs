@@ -23,6 +23,7 @@ namespace CombatPets
             Multiplayer = new MultiplayerService(this);
 
             _petRegister = new PetRegister(Monitor, helper, () => _config, Data, Multiplayer);
+            Multiplayer.SetPetRegister(_petRegister);
 
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             helper.Events.GameLoop.DayStarted += this.OnDayStarted;
@@ -97,6 +98,8 @@ namespace CombatPets
             if (!Context.IsWorldReady) return;
             
             _petRegister.Refresh();
+            // send refresh registry to clients, so they can update their pet managers (the event NPCListChange doesn't trigger for clients when pets are warped.)
+            Multiplayer.SendRefreshRegistry();
         }
 
         private void OnRendered(object? sender, RenderedEventArgs e)

@@ -16,31 +16,29 @@ namespace CombatPets
         private readonly IMonitor Monitor;
         private readonly Func<ModConfig>? GetConfig;
         private readonly IModHelper Helper;
+        private readonly MultiplayerService Multiplayer;
 
         private readonly PetState PetState;
 
-        private static AnimationManager _animationManager;
-
         private int attackCoolDown = 0;
 
-        public CombatService(IMonitor monitor, Func<ModConfig>? getConfig, IModHelper helper, Pet pet, PetState state)
+        public CombatService(IMonitor monitor, Func<ModConfig>? getConfig, IModHelper helper, Pet pet, PetState state, MultiplayerService multiplayer)
         {
             Monitor = monitor;
             Helper = helper;
-            _animationManager = new AnimationManager(helper);
             GetConfig = getConfig;
             this.pet = pet;
             PetState = state;
+            Multiplayer = multiplayer;
         }
 
         // only called when EnableCombat is true
-        public void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
+        public void OnUpdateTicked(object? sender, UpdateTickedEventArgs e, Farmer player)
         {
             // combat service handled by host only
             if (!Context.IsMainPlayer || pet == null || PetState.State == PetStateEnum.Defeated)
                 return;
 
-            Farmer player = Game1.player;
             GameLocation location = pet.currentLocation;
             if (location is not MineShaft || player.currentLocation != location)
             {
@@ -53,9 +51,9 @@ namespace CombatPets
                 PetState.SetState(PetStateEnum.Combat);
             }
 
-            Monitor.VerboseLog($"Pet: {pet.name}, State: {PetState.State}, Health: {PetState.Health}");
+            if (e.IsOneSecond) Monitor.VerboseLog($"Pet: {pet.name}, State: {PetState.State}, Health: {PetState.Health}");
 
-            checkDamageFromMonster(location);
+            checkDamageFromMonster(location, player);
 
             if (attackCoolDown > 0)
             {
@@ -64,7 +62,7 @@ namespace CombatPets
             }
 
 
-            bool damaged = attackMonster();
+            bool damaged = attackMonster(player);
             if (damaged)
             {
                 attackCoolDown = 30; 
@@ -75,13 +73,10 @@ namespace CombatPets
             
         }
 
-        public bool attackMonster()
+        public bool attackMonster(Farmer player)
         {
             GameLocation location = pet.currentLocation;
-            Farmer player = Game1.player;
             if (location == null || location != player.currentLocation) return false;
-
-
 
             Rectangle damageArea = getAttackArea();
             int baseDamage = getAttackDamage();
@@ -89,11 +84,10 @@ namespace CombatPets
             // inherit lucky etc. buff from player
             bool damaged = location.damageMonster(damageArea, baseDamage, (int)(baseDamage * 1.2f), false, player);
 
-
             if (damaged)
             {
                 PlayAttackEffects();
-                _animationManager.DrawAttack(location, damageArea, pet.FacingDirection == 1 || pet.FacingDirection == 3);
+                Multiplayer.BroadcastAttackEffect(location, damageArea, pet.FacingDirection is 1 or 3);
 
                 PetState.SetState(PetStateEnum.Attacking);
                 DelayedAction.functionAfterDelay(() => {
@@ -101,7 +95,6 @@ namespace CombatPets
                     else PetState.SetState(PetStateEnum.Defeated);
                 }, 300);
             }
-            Monitor.Log($"Did perform attack: {damaged}", LogLevel.Trace);
             return damaged;
 
         }
@@ -136,9 +129,8 @@ namespace CombatPets
             pet.shakeTimer = 250;
         }
 
-        public void takeDamage(int damage, Monster damager)
+        public void takeDamage(int damage, Monster damager, Farmer player)
         {
-            Farmer player = Game1.player;
             if (Game1.eventUp || player.FarmerSprite.isPassingOut() || (player.isInBed.Value && Game1.activeClickableMenu != null && Game1.activeClickableMenu is ReadyCheckDialog))
             {
                 return;
@@ -209,24 +201,16 @@ namespace CombatPets
 
             // damaged
             PetState.SetHealth(Math.Max(0, PetState.Health - damage));
-            
-            PetState.Attacked();
 
-            Point standingPixel = pet.StandingPixel;
-            pet.currentLocation.debris.Add(new Debris(damage, new Vector2(standingPixel.X + 8, standingPixel.Y), Color.Yellow, 1f, pet));
-            pet.playNearbySoundAll("ow");
+            bool defeated = !PetState.IsAlive();
+            if (defeated) PetState.SetState(PetStateEnum.Defeated);
 
-            Monitor.VerboseLog($"Damage: {damage}, Health: {PetState.Health}");
-
-            if (!PetState.IsAlive())
-            {
-                PetState.SetState(PetStateEnum.Defeated);
-                Game1.showGlobalMessage(Helper.Translation.Get("combat-service.pet-defeat-announcement", new { petName = pet.name }));
-            }
+            Multiplayer.BroadcastPetHit(pet, damage, 60, 120, defeated);
+            Monitor.VerboseLog($"Pet {pet.Name} took {damage} damage. Health: {PetState.Health}/{PetState.MaxHealth}.");
 
         }
 
-        private void checkDamageFromMonster(GameLocation location)
+        private void checkDamageFromMonster(GameLocation location, Farmer owner)
         {
             if (Game1.eventUp)
             {
@@ -240,7 +224,7 @@ namespace CombatPets
                     monster.collisionWithFarmerBehavior();
                     if (monster.DamageToFarmer > 0)
                     {
-                        takeDamage(monster.DamageToFarmer, monster);
+                        takeDamage(monster.DamageToFarmer, monster, owner);
                     }
                 }
             }

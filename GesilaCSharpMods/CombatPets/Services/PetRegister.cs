@@ -72,7 +72,7 @@ namespace CombatPets
                 }
                 // update if reference is different, or create new manager if not found
                 // update reference for later render & follow checks of clients
-                var petManager = new PetManager(Monitor, GetConfig, this.Helper, pet, Data, petId);
+                var petManager = new PetManager(Monitor, GetConfig, this.Helper, pet, Data, petId, Multiplayer);
                 Managers[petId] = petManager;
             }
 
