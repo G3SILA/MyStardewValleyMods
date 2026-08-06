@@ -50,7 +50,7 @@ namespace CombatPets
         {
             _petRegister.OnDayStarted(sender, e);
 
-            // restart everyday
+            if (!Context.IsMainPlayer) return;
 
             foreach (PetManager manager in _petRegister.AllManagers)
             {
@@ -80,8 +80,7 @@ namespace CombatPets
 
         private void OnWarped(object? sender, WarpedEventArgs e)
         {
-            if (!Context.IsWorldReady)
-                return;
+            if (!Context.IsWorldReady || !Context.IsMainPlayer) return;
             _petRegister.ApplyToAllFollowingManagers(manager => manager.OnWarped(sender, e)); 
 
         }
@@ -95,18 +94,9 @@ namespace CombatPets
 
         private void OnNpcListChanged(object? sender, NpcListChangedEventArgs e)
         {
-            // TODO: must be updated for multiplayer, as the pet may not be at the same position as main player
-            if (!Context.IsWorldReady || !Context.IsMainPlayer)
-                return;
-
-            Pet? removed = _petRegister.IsPetRemoved(sender, e);
-            if (removed != null)
-            {
-                PetManager? manager = _petRegister.getManager(removed);
-                // ? TODO update list 
-                if (manager is not null)
-                    Monitor.VerboseLog($"{manager.pet.name} is leaving us forever!!!");
-            }
+            if (!Context.IsWorldReady) return;
+            
+            _petRegister.Refresh();
         }
 
         private void OnRendered(object? sender, RenderedEventArgs e)

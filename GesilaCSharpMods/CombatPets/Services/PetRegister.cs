@@ -5,15 +5,14 @@ using StardewValley.Buildings;
 using StardewValley.Characters;
 using StardewValley.Locations;
 using Microsoft.Xna.Framework;
+using StardewModdingAPI.Framework.Logging;
 
-/*
-    Find all pets in the world and store them in a list
-
-    TODO: handle update of add/remove pet
-*/
 
 namespace CombatPets
 {
+    /// <summary>
+    /// Handle pet registration. This class is responsible for tracking all pets in the game and handling interactions such as following players.
+    /// </summary>
     internal sealed class PetRegister
     {
         private readonly IMonitor Monitor;
@@ -37,19 +36,58 @@ namespace CombatPets
 
         public void OnDayStarted(object? sender, DayStartedEventArgs e)
         {
-            List<Pet> Pets = getAllPetsInAllLocations();
-            foreach (Pet pet in Pets)
+            Managers.Clear();
+            Refresh();
+        }
+
+        public void Refresh()
+        {
+            if (!Context.IsWorldReady) return;
+
+            Monitor.VerboseLog("Refreshing pet managers");
+
+            Dictionary<string, Pet> foundPets = new();
+            IEnumerable<GameLocation> locations = Context.IsMainPlayer? Game1.locations : Helper.Multiplayer.GetActiveLocations();
+
+            foreach (GameLocation location in locations)
             {
-                string id = GetPetId(pet);
+                foreach (NPC npc in location.characters)
+                {
+                    if (npc is not Pet pet)
+                        continue;
 
-                if (id is not null) { 
-                    var petManager = new PetManager(Monitor, GetConfig, this.Helper, pet, Data, id);
-                    Managers[id] = petManager;
+                    string? petId = GetPetId(pet);
 
-                    Monitor.VerboseLog($"PetRegister: Found pet {pet.name} with id {id}");
+                    if (petId is not null)
+                        foundPets[petId] = pet;
+                }
+            }
+
+            foreach ((string petId, Pet pet) in foundPets)
+            {
+                if (Managers.TryGetValue(petId, out PetManager? existing)
+                    && ReferenceEquals(existing.pet, pet))
+                {
+                    continue;
+                }
+                // update if reference is different, or create new manager if not found
+                // update reference for later render & follow checks of clients
+                var petManager = new PetManager(Monitor, GetConfig, this.Helper, pet, Data, petId);
+                Managers[petId] = petManager;
+            }
+
+            foreach (string missingId in Managers.Keys.Except(foundPets.Keys).ToArray()) 
+            {
+                // only remove if pet is no longer on its current location, that is removed from the world.
+                // otherwise, it may be a multiplayer client sync issue in the mineshaft
+                if (!IsPetInItsCurrentLocation(Managers[missingId]))
+                {
+                    Managers.Remove(missingId);
+                    Monitor.VerboseLog($"Removed pet manager for missing pet {missingId}");
                 }
             }
         }
+
 
         public PetManager? getManager(string petId)
         {
@@ -63,6 +101,7 @@ namespace CombatPets
             return petId is null ? null : getManager(petId);
         }
 
+        [Obsolete("Use refresh instead")]
         public Pet? IsPetRemoved(object? sender, NpcListChangedEventArgs e)
         {
             // TODO: must be updated for multiplayer, as the pet may not be at the same position as main player
@@ -84,6 +123,20 @@ namespace CombatPets
                 }
             }
             return null;
+        }
+
+        /// <summary>
+        /// if pet is in its current location. Use to check if it is removed from the world.
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <returns></returns>
+        private bool IsPetInItsCurrentLocation(PetManager manager)
+        {
+            Pet pet = manager.pet;
+            GameLocation? location = pet.currentLocation;
+
+            return location is not null &&
+                   location.characters.Contains(pet);
         }
 
         public List<Pet> getAllPetsInAllLocations()
