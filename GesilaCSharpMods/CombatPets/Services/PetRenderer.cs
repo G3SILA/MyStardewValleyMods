@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley.Locations;
+using Microsoft.Xna.Framework.Content;
 
 namespace CombatPets
 {
@@ -14,6 +15,7 @@ namespace CombatPets
         private readonly Func<ModConfig> GetConfig;
         private readonly Pet pet; 
         private readonly PetState PetState;
+
 
         public PetRenderer(IMonitor monitor, Func<ModConfig> getconfig, Pet pet, PetState state)
         {
@@ -29,6 +31,13 @@ namespace CombatPets
             if (pet.currentLocation != Game1.currentLocation)
                 return;
 
+            // manually update the pet's animation for clients
+            if (!Context.IsMainPlayer)
+            {
+                UpdateRemotePetAnimation(Game1.currentGameTime);
+            }
+
+            // health bar rendering
             if (GetConfig().ShowHealthBar == ShowHealthBar.Always)
             {
                 if (PetState.State == PetStateEnum.Combat || PetState.State == PetStateEnum.Attacking)
@@ -51,6 +60,37 @@ namespace CombatPets
                 GlowEffect(e.SpriteBatch, Color.Red, 0.5f);
             }
         
+        }
+
+        public void UpdateRemotePetAnimation(GameTime time)
+        {
+            if (!pet.IsRemoteMoving())
+            {
+                return;
+            }
+
+            int direction = pet.facingDirection.Value;
+
+            pet.Sprite.ignoreStopAnimation = false;
+
+            switch (direction)
+            {
+                case 0:
+                    pet.Sprite.AnimateUp(time);
+                    break;
+
+                case 1:
+                    pet.Sprite.AnimateRight(time);
+                    break;
+
+                case 2:
+                    pet.Sprite.AnimateDown(time);
+                    break;
+
+                case 3:
+                    pet.Sprite.AnimateLeft(time);
+                    break;
+            }
         }
 
         private void DrawPetHealthBar(SpriteBatch spriteBatch, Vector2 position)

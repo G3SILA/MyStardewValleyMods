@@ -93,7 +93,7 @@ namespace CombatPets
             {
                 return state;
             }
-            Monitor.VerboseLog("Cannot parse state");
+            Monitor.Log("Cannot parse state", LogLevel.Debug);
             return PetStateEnum.Idle;
         }
 

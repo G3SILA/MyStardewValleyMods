@@ -4,6 +4,8 @@
   "follow.capacity-reached": "已达到最大跟随数量（可在设置更改）。",
   "follow.stopped": "{{petName}}停止了跟随。",
   "follow.disabled-in-mines": "不要在矿洞丢下{{petName}}!",
+  "follow.already-following": "{{petName}}正在跟随{{farmerName}}",
+  "follow.pet-not-found": "主持（Host）找不到该宠物",
 
   "combat-service.pet-defeat-announcement": "{{petName}}今天已经筋疲力尽，无法继续战斗了。",
 

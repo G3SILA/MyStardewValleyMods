@@ -75,6 +75,7 @@ namespace CombatPets
                 // update reference for later render & follow checks of clients
                 var petManager = new PetManager(Monitor, GetConfig, this.Helper, pet, Data, petId, Multiplayer);
                 Managers[petId] = petManager;
+                Monitor.VerboseLog($"add new manager: {petId}");
             }
 
             foreach (string missingId in Managers.Keys.Except(foundPets.Keys).ToArray()) 

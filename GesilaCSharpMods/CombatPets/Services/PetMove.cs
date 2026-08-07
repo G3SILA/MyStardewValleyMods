@@ -26,7 +26,7 @@ namespace CombatPets
         private Point _lastTile;
         private Vector2 _playerLastPosition;
         private int stuckCounter = 0;
-        const int RePathCoolDown = 15;
+        const int RePathCoolDown = 45;
 
         // attack mode set
         private bool attackMode = false;
@@ -59,7 +59,7 @@ namespace CombatPets
                 return;
             }
 
-            // repath per RePathCoolDown(15) ticks
+            // repath per RePathCoolDown ticks
             if (_repathCooldown > 0)
             {
                 _repathCooldown--;
@@ -218,11 +218,11 @@ namespace CombatPets
 
         private void TakeControlOfPet(Pet pet)
         {
+            pet.isSleeping.Value = false;
+
             pet.controller = null;
 
             pet.Halt();
-
-            pet.Sprite?.ClearAnimation();
 
             pet.isSleepingOnFarmerBed.Value = false;
 
