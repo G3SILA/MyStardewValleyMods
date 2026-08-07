@@ -47,7 +47,8 @@ namespace CombatPets
             Monitor.VerboseLog("Refreshing pet managers");
 
             Dictionary<string, Pet> foundPets = new();
-            IEnumerable<GameLocation> locations = Context.IsMainPlayer? Game1.locations : Helper.Multiplayer.GetActiveLocations();
+            IEnumerable<GameLocation> activeLocations = Helper.Multiplayer.GetActiveLocations();
+            IEnumerable<GameLocation> locations = Context.IsMainPlayer? Game1.locations.Concat(activeLocations).Distinct() : activeLocations;
 
             foreach (GameLocation location in locations)
             {

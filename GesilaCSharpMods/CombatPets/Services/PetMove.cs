@@ -248,6 +248,10 @@ namespace CombatPets
             ClearRepathState();
 
             GameLocation newLocation = owner.currentLocation;
+
+            // don't warp to temp location, may crush in multiplayer
+            if (newLocation is null || newLocation.NameOrUniqueName == "Temp") return;
+
             if (jump && GetConfig!().SoundOnJumpPet)
             {
                 pet.jump();
@@ -258,6 +262,15 @@ namespace CombatPets
             }
 
             Point destination = Utilities.GetClosestValidTile(pet, owner.TilePoint, newLocation);
+
+            Monitor.VerboseLog(
+                "Pre-Warping..." +
+                $"Pet: {pet.name}" +  
+                $"Owner: {owner.Name}, " +
+                $"owner location: {owner.currentLocation?.NameOrUniqueName ?? "null"}, " +
+                $"host location: {Game1.currentLocation?.NameOrUniqueName ?? "null"}, " +
+                $"same location: {ReferenceEquals(owner.currentLocation, Game1.currentLocation)}"
+            );
             Game1.warpCharacter(pet, newLocation.NameOrUniqueName, destination);
 
             Monitor.Log($"Warped pet {pet.Name} to {newLocation.NameOrUniqueName}.", LogLevel.Trace);
