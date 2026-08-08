@@ -68,12 +68,12 @@ namespace CombatPets
                 // fill up client as well?
             }
 
-            // TODO: to be tested
             if (_config.WarpAllPetsBackToFarmHouseOnDayStarted)
             {
                 _petRegister.ApplyToAllPets(pet =>
                 {
-                    Game1.warpCharacter(pet, "FarmHouse", Game1.MasterPlayer.TilePoint);
+                    Point destination = Utilities.GetClosestValidTile(pet, Game1.MasterPlayer.TilePoint, Game1.RequireLocation("FarmHouse"));
+                    Game1.warpCharacter(pet, "FarmHouse", destination);
                 });
             }
 
