@@ -21,7 +21,7 @@
   "config.follow-distance.tooltip": "宠物尝试与你保持的距离，以格为单位。",
 
   "config.max-number-followers.name": "最大宠物跟随数量",
-  "config.max-number-followers.tooltip": "第二天起床生效。",
+  "config.max-number-followers.tooltip": "多人模式中，房间主持人的设置会影响所有人",
 
   "config.added-follow-speed.name": "额外跟随速度",
   "config.added-follow-speed.tooltip": "宠物在跟随你时获得的额外移动速度 (建议3)",
@@ -57,5 +57,5 @@
   "config.warp-all-pets-back-to-farmhouse-on-day-started.tooltip": "每天开始时，自动将所有宠物送回农舍。",
 
   "config.fill-up-team-on-day-started.name": "每天开始时补满跟随队伍",
-  "config.fill-up-team-on-day-started.tooltip": "每天开始时，自动使用可用宠物补满你的跟随队伍。"
+  "config.fill-up-team-on-day-started.tooltip": "每天开始时，自动使用可用宠物补满你的跟随队伍（多人模式仅房主的设置生效）。"
 }

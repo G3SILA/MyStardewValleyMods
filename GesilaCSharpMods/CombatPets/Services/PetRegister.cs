@@ -1,11 +1,10 @@
-﻿using StardewModdingAPI;
+﻿using Microsoft.Xna.Framework;
+using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Characters;
 using StardewValley.Locations;
-using Microsoft.Xna.Framework;
-using StardewModdingAPI.Framework.Logging;
 
 
 namespace CombatPets
@@ -25,6 +24,11 @@ namespace CombatPets
         private readonly Dictionary<string, PetManager> Managers = new();
         public IEnumerable<PetManager> AllManagers => Managers.Values;
         public int following => AllManagers.Count(manager => manager.IsFollowing);
+
+        /// <summary>
+        /// unique farmer id to number of pets following them.
+        /// </summary>
+        private readonly Dictionary<long, int> NumberFollowFarmer = new();
         public PetRegister(IMonitor monitor, IModHelper helper, Func<ModConfig> getConfig, PetDataService data, MultiplayerService mult)
         {
             Monitor = monitor;
@@ -37,7 +41,16 @@ namespace CombatPets
         public void OnDayStarted(object? sender, DayStartedEventArgs e)
         {
             Managers.Clear();
+            NumberFollowFarmer.Clear();
             Refresh();
+
+            if (!Context.IsMainPlayer) return;
+
+            foreach (PetManager manager in AllManagers)
+            {
+                manager.StopFollowing();
+                manager.OnDayStarted(sender, e);
+            }
         }
 
         public void Refresh()
@@ -198,11 +211,15 @@ namespace CombatPets
 
 
 
-        public void addToFollow(Pet pet, Farmer owner, bool showFeedback = true)
+        private void addToFollow(Pet pet, Farmer owner, bool showFeedback = true)
         {
             var manager = getManager(pet);
 
             manager.AssignOwner(owner.UniqueMultiplayerID);
+
+            NumberFollowFarmer.TryGetValue(owner.UniqueMultiplayerID, out int count);
+            NumberFollowFarmer[owner.UniqueMultiplayerID] = count + 1;
+
             if (showFeedback)
             {
                 pet.playContentSound();
@@ -211,9 +228,14 @@ namespace CombatPets
 
         }
 
-        public void removeFromFollow(Pet pet)
+        private void removeFromFollow(Pet pet)
         {
             var manager = getManager(pet);
+            long farmerId = manager.OwnerId ?? -1;
+            if (farmerId != -1)
+            {
+                NumberFollowFarmer[farmerId] = Math.Max(0, NumberFollowFarmer[farmerId] - 1);
+            }
             manager.StopFollowing();
         }
 
@@ -244,7 +266,7 @@ namespace CombatPets
                 removeFromFollow(manager.pet);
                 result = ToggleFollowResultMessage.SuccessToggle(manager, isFollowing: false);
             }
-            else if (following >= GetConfig().MaxNumberFollowers)
+            else if (NumberFollowFarmer.TryGetValue(requesterId, out int followNum) && followNum >= GetConfig().MaxNumberFollowers)
             {
                 result = ToggleFollowResultMessage.Failure(petId, manager.pet.Name, "capacity");
             }

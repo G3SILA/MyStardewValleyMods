@@ -18,7 +18,7 @@
   "config.toggle-pet-following-keybind.tooltip": "Press this key near a pet to make it start or stop following you.",
 
   "config.max-number-followers.name": "Max Number of Pets Following",
-  "config.max-number-followers.tooltip": "effective on next day start after reset.",
+  "config.max-number-followers.tooltip": "For multiplayer, host setup would work on all players.",
 
   "config.follow-distance.name": "Follow Distance",
   "config.follow-distance.tooltip": "The distance, in tiles, that your pet tries to maintain from you.",
@@ -58,7 +58,7 @@
   "config.warp-all-pets-back-to-farmhouse-on-day-started.tooltip": "Automatically return all pets to the farmhouse at the start of each day.",
 
   "config.fill-up-team-on-day-started.name": "Fill Follow Team on Day Start",
-  "config.fill-up-team-on-day-started.tooltip": "Automatically fill your following team to max with available pets at the start of each day."
+  "config.fill-up-team-on-day-started.tooltip": "Automatically fill your following team to max with available pets at the start of each day (Only host configuration takes effect for Multiplayer)."
 
 
 }

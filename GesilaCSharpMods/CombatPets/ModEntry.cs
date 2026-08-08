@@ -53,21 +53,6 @@ namespace CombatPets
 
             if (!Context.IsMainPlayer) return;
 
-            foreach (PetManager manager in _petRegister.AllManagers)
-            {
-                manager.StopFollowing();
-                manager.OnDayStarted(sender, e);
-            }
-
-            if (_config.FillUpTeamOnDayStarted)
-            {
-                foreach (PetManager manager in _petRegister.AllManagers.Take(_config.MaxNumberFollowers))
-                {
-                    _petRegister.addToFollow(manager.pet, Game1.MasterPlayer, showFeedback: false);
-                }  
-                // fill up client as well?
-            }
-
             if (_config.WarpAllPetsBackToFarmHouseOnDayStarted)
             {
                 _petRegister.ApplyToAllPets(pet =>
@@ -75,6 +60,18 @@ namespace CombatPets
                     Point destination = Utilities.GetClosestValidTile(pet, Game1.MasterPlayer.TilePoint, Game1.RequireLocation("FarmHouse"));
                     Game1.warpCharacter(pet, "FarmHouse", destination);
                 });
+            }
+
+            if (_config.FillUpTeamOnDayStarted)
+            {
+                foreach(Farmer farmer in Game1.getOnlineFarmers())
+                {
+                    foreach (PetManager manager in _petRegister.AllManagers)
+                    {
+                        if (manager.IsFollowing) continue;
+                        _petRegister.HandleToggleFollowRequest(farmer.UniqueMultiplayerID, manager.PetId);
+                    }
+                } 
             }
 
         }
